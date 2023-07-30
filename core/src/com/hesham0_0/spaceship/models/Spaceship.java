@@ -55,6 +55,9 @@ public class Spaceship {
         this.targetAngle = targetAngle;
         Gdx.app.log("Spaceship", "angle: " + Math.toDegrees(targetAngle));
     }
+    public Float getTargetAngle() {
+        return targetAngle;
+    }
 
     private void updateRotation(float delta) {
         float angleDiff = targetAngle - currentAngle;
@@ -69,9 +72,6 @@ public class Spaceship {
 
         currentAngle += angleDiff * interpolationSpeed * delta;
         spaceshipBody.setTransform(spaceshipBody.getPosition(), (float) (currentAngle- Math.toRadians(90)));
-        // Set the new angle for the spaceship's physics body
-//        float newAngle = (float) (spaceshipBody.getAngle() + angleDiff - Math.toRadians(90));
-//        spaceshipBody.setTransform(spaceshipBody.getPosition(), newAngle);
     }
 
 

@@ -13,15 +13,18 @@ import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.hesham0_0.spaceship.models.Bullet;
+import com.hesham0_0.spaceship.models.Rock;
 import com.hesham0_0.spaceship.models.Spaceship;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
-public class Game extends ApplicationAdapter implements InputProcessor {
+public class Main extends ApplicationAdapter implements InputProcessor {
 	private OrthographicCamera camera;
 	private final float virtualWidth = 720;
 	private final float virtualHeight = 1280;
@@ -29,11 +32,16 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	private World world;
 	private Spaceship spaceship;
 	private List<Bullet> bullets;
+	private float bulletSpeed = 500;
+	private float rockSpeed =100;
+	private float delta;
 	private Box2DDebugRenderer debugRenderer;
 	private ShapeRenderer shapeRenderer;
+	List<Rock> rocks = new ArrayList<>();
+	long rockInterval = 1000;
 
 	@Override
-	public void create () {
+	public void create() {
 		Box2D.init();
 		batch = new SpriteBatch();
 		world = new World(new Vector2(0, 0), true);
@@ -47,23 +55,37 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		batch.setProjectionMatrix(camera.combined);
 		Gdx.input.setInputProcessor(this);
 
-		spaceship = new Spaceship(world,virtualWidth,virtualHeight);
+		spaceship = new Spaceship(world, virtualWidth, virtualHeight);
 		bullets = new ArrayList<>();
 		shapeRenderer = new ShapeRenderer();
+
+		Timer rockTimer = new Timer();
+		rockTimer.scheduleTask(new Timer.Task() {
+			@Override
+			public void run() {
+				createRocks();
+			}
+		}, 0, rockInterval / 1000f);
 	}
 
 	@Override
-	public void render () {
-		float delta = Gdx.graphics.getDeltaTime();
-		world.step(1/60f, 6, 2);
+	public void render() {
+		delta = Gdx.graphics.getDeltaTime();
+		world.step(1 / 60f, 6, 2);
 		spaceship.update(delta);
 		updateBullets(delta);
+		updateRock(delta);
 		ScreenUtils.clear(0, 0, 0.3f, 1);
 		batch.begin();
 		for (Bullet bullet : bullets) {
 			bullet.render(batch);
 		}
-		spaceship.render(batch);
+		batch.end();
+
+		batch.begin();
+		for (Rock rock : rocks) {
+			rock.render(batch);
+		}
 		batch.end();
 
 		batch.begin();
@@ -77,10 +99,23 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 			Bullet bullet = iterator.next();
 			bullet.update();
 			// Remove the bullet if it's off-screen or any other condition you want to check
-			if (bullet.getBody().getPosition().x < 0 || bullet.getBody().getPosition().x > Gdx.graphics.getWidth() ||
-					bullet.getBody().getPosition().y < 0 || bullet.getBody().getPosition().y > Gdx.graphics.getHeight()) {
+			if (bullet.getBody().getPosition().x < 0 || bullet.getBody().getPosition().x > camera.viewportWidth ||
+					bullet.getBody().getPosition().y < 0 || bullet.getBody().getPosition().y > camera.viewportHeight) {
 				iterator.remove();
 			}
+		}
+	}
+
+	private void updateRock(float delta) {
+		Iterator<Rock> iterator = rocks.iterator();
+		while (iterator.hasNext()) {
+			Rock rock = iterator.next();
+			rock.update();
+			// Remove the bullet if it's off-screen or any other condition you want to check
+//			if (rock.getBody().getPosition().x < 0 || rock.getBody().getPosition().x > camera.viewportWidth ||
+//					rock.getBody().getPosition().y < 0 || rock.getBody().getPosition().y > camera.viewportHeight) {
+//				iterator.remove();
+//			}
 		}
 	}
 
@@ -95,13 +130,16 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		viewport.update(width, height);
 		batch.setProjectionMatrix(camera.combined);
 	}
-	
+
 	@Override
-	public void dispose () {
+	public void dispose() {
 		batch.dispose();
 		spaceship.dispose();
 		for (Bullet bullet : bullets) {
 			bullet.dispose();
+		}
+		for (Rock rock : rocks) {
+			rock.dispose();
 		}
 		world.dispose();
 		debugRenderer.dispose();
@@ -130,11 +168,11 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 		float worldX = worldCoordinates.x;
 		float worldY = worldCoordinates.y;
 
-		float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y-(spaceship.getTexture().getHeight()/ 2f), worldX - spaceship.getBody().getPosition().x- (spaceship.getTexture().getWidth() / 2f));
+		float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y - (spaceship.getTexture().getHeight() / 2f), worldX - spaceship.getBody().getPosition().x - (spaceship.getTexture().getWidth() / 2f));
 
 		spaceship.setTargetAngle(angle);
 
-		createBullets(worldX,worldY);
+		createBullets(worldX, worldY);
 		return true;
 	}
 
@@ -163,19 +201,58 @@ public class Game extends ApplicationAdapter implements InputProcessor {
 	public boolean scrolled(float amountX, float amountY) {
 		return false;
 	}
-	private void createBullets(float worldX, float worldY){
+
+	private void createBullets(float worldX, float worldY) {
 
 		float directionX = worldX - spaceship.getBody().getPosition().x;
 		float directionY = worldY - spaceship.getBody().getPosition().y;
 
-		float forceMagnitude = 5000;
+		float distance = bulletSpeed * delta;
 		float length = (float) Math.sqrt(directionX * directionX + directionY * directionY);
-		float forceX = directionX / length * forceMagnitude;
-		float forceY = directionY / length * forceMagnitude;
+		float forceX = directionX / length * distance;
+		float forceY = directionY / length * distance;
 
-		Bullet bullet = new Bullet(world, spaceship.getBody().getPosition().x + (spaceship.getTexture().getWidth() / 2f)+50, spaceship.getBody().getPosition().y + (spaceship.getTexture().getHeight() / 2f)+50,
+		Bullet bullet = new Bullet(world,
+				spaceship.getBody().getPosition().x + (spaceship.getTexture().getWidth() / 2f),
+				spaceship.getBody().getPosition().y + (spaceship.getTexture().getHeight() / 2f),
 				10, 10);
-		bullet.applyForce(1000000000, 100000000);
+
+		bullet.setSpeed(forceX, forceY);
 		bullets.add(bullet);
+	}
+
+	private void createRocks() {
+		Random random = new Random();
+		int edge = random.nextInt(4); // generate a random edge index from 0 to 3
+		float x, y, angle;
+		switch (edge) {
+			// top edge
+			// random angle between -90 and 90 degrees
+			case 1: // right edge
+				x = camera.viewportWidth;
+				y = random.nextFloat() * camera.viewportHeight;
+				angle = 135 + random.nextFloat() * 225; // random angle between 180-+45 degrees
+				break;
+			case 2: // bottom edge
+				x = random.nextFloat() * camera.viewportWidth;
+				y = 0;
+				angle = 45 + random.nextFloat() * 135; // random angle between 90-+45 degrees
+				break;
+			case 3: // left edge
+				x = 0;
+				y = random.nextFloat() * camera.viewportHeight;
+				angle = -45 + random.nextFloat() * 45; // random angle between 0-+45 and 180 degrees
+				break;
+			default: // fallback to top edge
+				x = random.nextFloat() * camera.viewportWidth;
+				y = camera.viewportHeight;
+				angle = -135 + random.nextFloat() * -45; // random angle between 0-+(-90) and 180 degrees
+				break;
+		}
+		int randomLevel = random.nextInt(3) + 1;
+		Rock rock = new Rock(world, randomLevel, x, y);
+		rocks.add(rock);
+		rock.setSpeed(rockSpeed*delta, (float) Math.toRadians(angle));
+		Gdx.app.log("createRocks","rocks.size = "+rocks.size());
 	}
 }

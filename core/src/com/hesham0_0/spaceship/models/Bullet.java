@@ -1,5 +1,6 @@
 package com.hesham0_0.spaceship.models;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.World;
 public class Bullet {
     private Body body;
     private Color color;
+    private Vector2 speed;
     private Texture bulletTexture;
 
     public Bullet(World world, float x, float y, float width, float height) {
@@ -35,8 +37,8 @@ public class Bullet {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = 1f;
-        fixtureDef.friction = 0.00004f;
-        fixtureDef.restitution = 0.000006f;
+        fixtureDef.friction = 0;
+        fixtureDef.restitution = 0;
 
         // Create the fixture
         body.createFixture(fixtureDef);
@@ -50,13 +52,14 @@ public class Bullet {
 
     }
 
-    public void applyForce(float forceX, float forceY) {
-//        body.applyForceToCenter(forceX, forceY, true);
-        body.setLinearVelocity(forceX,forceY);
+    public void setSpeed(float speedX, float speedY) {
+        speed=new Vector2(speedX,speedY);
     }
 
+
     public void update() {
-        // Update any properties or behaviors of the bullet if needed
+        Vector2 position = body.getPosition().add(speed);
+        body.setTransform(position, position.angleRad());
     }
 
     public void render(SpriteBatch batch) {
