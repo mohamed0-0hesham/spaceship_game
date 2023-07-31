@@ -1,6 +1,7 @@
 package com.hesham0_0.spaceship.models;
 
-import com.badlogic.gdx.graphics.Color;
+import static com.badlogic.gdx.math.MathUtils.random;
+
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -34,7 +35,6 @@ public class Rock {
         BodyDef rockBodyDef = new BodyDef();
         rockBodyDef.type = BodyDef.BodyType.DynamicBody;
         rockBodyDef.position.set(x, y);
-//        rockBodyDef.angle = angle;
 
         CircleShape shape = new CircleShape();
         shape.setRadius(rockRadius);
@@ -57,14 +57,28 @@ public class Rock {
         rockBody.setUserData(this);
     }
 
+    public void moveTo(Vector2 position, float speedMagnitude) {
+        // Calculate the direction and distance to the target position
+        float dx = position.x - x;
+        float dy = position.y - y;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+        // Calculate the speed in the x and y directions
+        float speedX = dx / distance * speedMagnitude;
+        float speedY = dy / distance * speedMagnitude;
+
+        angle= (float) Math.atan2(speedY, speedX);
+        this.speed=new Vector2(speedX,speedY);
+    }
+
     public void setSpeed(float magnitude, float angle) {
         float speedX = (float) Math.cos(angle) * magnitude;
         float speedY = (float) Math.sin(angle) * magnitude;
         speed=new Vector2(speedX,speedY);
-//        rockBody.applyForceToCenter(speed,true);
     }
-    public void update() {
-        Vector2 position = rockBody.getPosition().add(speed);
+    public void update(float delta) {
+        Vector2 distance=new Vector2(speed.x*delta,speed.y*delta);
+        Vector2 position = rockBody.getPosition().add(distance);
         rockBody.setTransform(position, position.angleRad());
     }
 

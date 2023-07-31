@@ -1,5 +1,7 @@
 package com.hesham0_0.spaceship;
 
+import static com.badlogic.gdx.math.MathUtils.random;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -17,6 +19,7 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.hesham0_0.spaceship.models.Bullet;
+import com.hesham0_0.spaceship.models.Explosion;
 import com.hesham0_0.spaceship.models.Rock;
 import com.hesham0_0.spaceship.models.Spaceship;
 import java.util.ArrayList;
@@ -31,15 +34,16 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private SpriteBatch batch;
 	private World world;
 	private Spaceship spaceship;
-	 List<Bullet> bullets;
+	private List<Bullet> bullets;
 	private float bulletSpeed = 500;
 	private float rockSpeed =100;
 	private float delta;
 	private Box2DDebugRenderer debugRenderer;
 	private ShapeRenderer shapeRenderer;
-	List<Rock> rocks = new ArrayList<>();
+	private List<Rock> rocks = new ArrayList<>();
+	private List<Explosion> explosions = new ArrayList<>();
 	long rockInterval = 1000;
-	public int points = 0;
+
 
 	@Override
 	public void create() {
@@ -74,15 +78,17 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private void setCollisionListener() {
 		GameContactListener contactListener = new GameContactListener(new ContactCallback() {
 			@Override
-			public void bulletRockCollision(Rock rock, Bullet bullet) {
+			public void bulletRockCollision(Rock rock, Bullet bullet, Vector2 contactPosition) {
 				rock.die();
 				bullet.die();
-				points++;
+				createExplosion(contactPosition);
+
 			}
 
 			@Override
-			public void spaceshipRocksCollision(Spaceship spaceship, Rock rock) {
-				points--;
+			public void spaceshipRocksCollision(Spaceship spaceship, Rock rock, Vector2 contactPosition) {
+				rock.die();
+				createExplosion(contactPosition);
 			}
 		});
 		world.setContactListener(contactListener);
@@ -95,6 +101,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		spaceship.update(delta);
 		updateBullets(delta);
 		updateRock(delta);
+		updateExplosion(delta);
 		ScreenUtils.clear(0, 0, 0.3f, 1);
 		batch.begin();
 		for (Bullet bullet : bullets) {
@@ -105,6 +112,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		batch.begin();
 		for (Rock rock : rocks) {
 			rock.render(batch);
+		}
+		batch.end();
+
+		batch.begin();
+		for (Explosion explosion : explosions) {
+			explosion.render(batch);
 		}
 		batch.end();
 
@@ -129,10 +142,21 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		Iterator<Rock> rockIterator = rocks.iterator();
 		while (rockIterator.hasNext()) {
 			Rock rock = rockIterator.next();
-			rock.update();
+			rock.update(delta);
 			if (!rock.isAlive()) {
 				rockIterator.remove();
 				world.destroyBody(rock.getBody());
+			}
+		}
+	}
+
+	private void updateExplosion(float delta) {
+		Iterator<Explosion> explosionIterator = explosions.iterator();
+		while (explosionIterator.hasNext()) {
+			Explosion explosion = explosionIterator.next();
+			explosion.update(delta);
+			if (!explosion.isAlive()) {
+				explosionIterator.remove();
 			}
 		}
 	}
@@ -270,7 +294,18 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		int randomLevel = random.nextInt(3) + 1;
 		Rock rock = new Rock(world, randomLevel, x, y);
 		rocks.add(rock);
-		rock.setSpeed(rockSpeed*delta, (float) Math.toRadians(angle));
-		Gdx.app.log("createRocks","rocks.size = "+rocks.size());
+
+		if(random.nextFloat()<0.7){
+			rock.moveTo(spaceship.getBody().getPosition(),rockSpeed);
+		}else {
+			rock.setSpeed(rockSpeed, (float) Math.toRadians(angle));
+		}
+
+		rock.moveTo(spaceship.getBody().getPosition(),rockSpeed);
+	}
+
+	private void createExplosion(Vector2 contactPosition) {
+		Explosion explosion = new Explosion(contactPosition);
+		explosions.add(explosion);
 	}
 }

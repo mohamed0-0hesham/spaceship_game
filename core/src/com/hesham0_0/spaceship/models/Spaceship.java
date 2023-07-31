@@ -98,7 +98,7 @@ public class Spaceship {
                 false,
                 false);
 
-        drawBodyPoints(batch);
+//        drawBodyPoints(batch);
     }
 
     public Body getBody() {
