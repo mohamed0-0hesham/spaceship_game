@@ -31,7 +31,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private SpriteBatch batch;
 	private World world;
 	private Spaceship spaceship;
-	private List<Bullet> bullets;
+	 List<Bullet> bullets;
 	private float bulletSpeed = 500;
 	private float rockSpeed =100;
 	private float delta;
@@ -66,6 +66,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				createRocks();
 			}
 		}, 0, rockInterval / 1000f);
+		GameContactListener contactListener = new GameContactListener(world, bullets,rocks);
+		world.setContactListener(contactListener);
 	}
 
 	@Override
