@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.hesham0_0.spaceship.models.Bullet;
 import com.hesham0_0.spaceship.models.Explosion;
+import com.hesham0_0.spaceship.models.Ring;
 import com.hesham0_0.spaceship.models.Rock;
 import com.hesham0_0.spaceship.models.Spaceship;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private ShapeRenderer shapeRenderer;
 	private List<Rock> rocks = new ArrayList<>();
 	private List<Explosion> explosions = new ArrayList<>();
+	private List<Ring> rings= new ArrayList<>();
 	long rockInterval = 1000;
 
 
@@ -71,7 +73,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				createRocks();
 			}
 		}, 0, rockInterval / 1000f);
-
+		createRings();
 		setCollisionListener();
 	}
 
@@ -121,6 +123,12 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 		batch.end();
 
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+		for (Ring ring : rings) {
+			ring.render(shapeRenderer);
+		}
+		shapeRenderer.end();
+
 		batch.begin();
 		spaceship.render(batch);
 		batch.end();
@@ -161,6 +169,28 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 	}
 
+	private void updateRing(float pressureLevel) {
+		int pressure = (int) Math.min(pressureLevel, 1000);
+		if (pressure > 150) {
+			rings.get(0).update(pressure-150,spaceship.getTexture().getWidth()*1.5f);
+		}else {
+			rings.get(0).update(0,0);
+		}
+
+		if (pressure > 330) {
+			rings.get(1).update(pressure-330,spaceship.getTexture().getWidth()*2);
+		}else {
+
+			rings.get(1).update(0,0);
+		}
+
+		if (pressure > 670) {
+			rings.get(2).update(pressure-670,spaceship.getTexture().getWidth()*2.5f );
+		}else {
+			rings.get(2).update(0,0);
+		}
+	}
+
 	@Override
 	public void resize(int width, int height) {
 		// Update the viewport when the screen is resized
@@ -182,6 +212,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 		for (Rock rock : rocks) {
 			rock.dispose();
+		}
+		for (Ring ring : rings) {
+			ring.dispose();
 		}
 		world.dispose();
 		debugRenderer.dispose();
@@ -215,6 +248,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		spaceship.setTargetAngle(angle);
 
 		createBullets(worldX, worldY);
+		updateRing(screenY);
 		return true;
 	}
 
@@ -235,7 +269,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
-
 		return false;
 	}
 
@@ -307,5 +340,11 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private void createExplosion(Vector2 contactPosition) {
 		Explosion explosion = new Explosion(contactPosition);
 		explosions.add(explosion);
+	}
+
+	private void createRings() {
+		for (int i = 0; i < 3; i++) {
+			rings.add(new Ring(world, spaceship.getBody().getPosition(), 0, 0, i));
+		}
 	}
 }
