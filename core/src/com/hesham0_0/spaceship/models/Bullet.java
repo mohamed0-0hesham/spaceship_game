@@ -17,6 +17,7 @@ public class Bullet {
     private Color color;
     private Vector2 speed;
     private Texture bulletTexture;
+    private boolean isAlive=true;
 
     public Bullet(World world, float x, float y, float width, float height) {
         bulletTexture = new Texture("bullet.png");
@@ -49,7 +50,7 @@ public class Bullet {
         massData.mass = 0.0000005f;
         body.setMassData(massData);
         body.setBullet(true);
-
+        body.setUserData(this);
     }
 
     public void setSpeed(float speedX, float speedY) {
@@ -75,5 +76,13 @@ public class Bullet {
 
     public Body getBody() {
         return body;
+    }
+
+    public void die() {
+        isAlive=false;
+        // Remove the Rock object from the game
+    }
+    public boolean isAlive(){
+        return isAlive;
     }
 }

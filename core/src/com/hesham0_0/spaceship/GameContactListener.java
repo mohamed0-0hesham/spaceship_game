@@ -1,15 +1,14 @@
 package com.hesham0_0.spaceship;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.badlogic.gdx.physics.box2d.World;
 import com.hesham0_0.spaceship.models.Bullet;
 import com.hesham0_0.spaceship.models.Rock;
-
-import java.util.List;
+import com.hesham0_0.spaceship.models.Spaceship;
 
 public class GameContactListener implements ContactListener {
     ContactCallback listener;
@@ -20,20 +19,36 @@ public class GameContactListener implements ContactListener {
     @Override
     public void beginContact(Contact contact) {
         // Get the bodies involved in the contact
-        Body bodyA = contact.getFixtureA().getBody();
-        Body bodyB = contact.getFixtureB().getBody();
+        Object bodyA = contact.getFixtureA().getBody().getUserData();
+        Object bodyB = contact.getFixtureB().getBody().getUserData();
 
         // Check if a bullet hit a rock
-        if (bodyA.getUserData() instanceof Bullet && bodyB.getUserData() instanceof Rock) {
-            Bullet bullet = (Bullet) bodyA.getUserData();
-            Rock rock = (Rock) bodyB.getUserData();
-            lBulletRockCollision(rock,bullet);
+        if (bodyA instanceof Bullet && bodyB instanceof Rock) {
+            Bullet bullet = (Bullet) bodyA;
+            Rock rock = (Rock) bodyB;
+            Gdx.app.log("BulletRockCollision","bullet-rock");
+            listener.bulletRockCollision(rock,bullet);
 
-        } else if (bodyA.getUserData() instanceof Rock && bodyB.getUserData() instanceof Bullet) {
+        } else if (bodyA instanceof Rock && bodyB instanceof Bullet) {
             // If the order is reversed, call the method again with the bodies swapped
-            Rock rock = (Rock) bodyA.getUserData();
-            Bullet bullet = (Bullet) bodyB.getUserData();
-            BulletRockCollision(rock,bullet);
+            Rock rock = (Rock) bodyA;
+            Bullet bullet = (Bullet) bodyB;
+            Gdx.app.log("BulletRockCollision","Rock-Bullet");
+            listener.bulletRockCollision(rock,bullet);
+        }
+        if (bodyA instanceof Spaceship && bodyB instanceof Rock) {
+            Spaceship spaceship = (Spaceship) bodyA;
+            Rock rock = (Rock) bodyB;
+            Gdx.app.log("BulletRockCollision","Spaceship-Bullet");
+            listener.spaceshipRocksCollision(spaceship,rock);
+
+        } else if (bodyA instanceof Rock && bodyB instanceof Spaceship) {
+
+            // If the order is reversed, call the method again with the bodies swapped
+            Rock rock = (Rock) bodyA;
+            Spaceship spaceship = (Spaceship) bodyB;
+            Gdx.app.log("BulletRockCollision","Spaceship-Bullet");
+            listener.spaceshipRocksCollision(spaceship,rock);
         }
     }
 
@@ -52,11 +67,4 @@ public class GameContactListener implements ContactListener {
         // Not used in this example
     }
 
-    private void BulletRockCollision(Rock rock,Bullet bullet){
-        // Remove the bullet and rock from their respective lists and from the world
-        bullets.remove(bullet);
-        rocks.remove(rock);
-        world.destroyBody(bullet.getBody());
-        world.destroyBody(rock.getBody());
-    }
 }

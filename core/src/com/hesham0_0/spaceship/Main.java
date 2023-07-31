@@ -39,6 +39,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private ShapeRenderer shapeRenderer;
 	List<Rock> rocks = new ArrayList<>();
 	long rockInterval = 1000;
+	public int points = 0;
 
 	@Override
 	public void create() {
@@ -66,7 +67,24 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				createRocks();
 			}
 		}, 0, rockInterval / 1000f);
-		GameContactListener contactListener = new GameContactListener(world, bullets,rocks);
+
+		setCollisionListener();
+	}
+
+	private void setCollisionListener() {
+		GameContactListener contactListener = new GameContactListener(new ContactCallback() {
+			@Override
+			public void bulletRockCollision(Rock rock, Bullet bullet) {
+				rock.die();
+				bullet.die();
+				points++;
+			}
+
+			@Override
+			public void spaceshipRocksCollision(Spaceship spaceship, Rock rock) {
+				points--;
+			}
+		});
 		world.setContactListener(contactListener);
 	}
 
@@ -96,28 +114,26 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void updateBullets(float delta) {
-		Iterator<Bullet> iterator = bullets.iterator();
-		while (iterator.hasNext()) {
-			Bullet bullet = iterator.next();
+		Iterator<Bullet> bulletIterator = bullets.iterator();
+		while (bulletIterator.hasNext()) {
+			Bullet bullet = bulletIterator.next();
 			bullet.update();
-			// Remove the bullet if it's off-screen or any other condition you want to check
-			if (bullet.getBody().getPosition().x < 0 || bullet.getBody().getPosition().x > camera.viewportWidth ||
-					bullet.getBody().getPosition().y < 0 || bullet.getBody().getPosition().y > camera.viewportHeight) {
-				iterator.remove();
+			if (!bullet.isAlive()) {
+				bulletIterator.remove();
+				world.destroyBody(bullet.getBody());
 			}
 		}
 	}
 
 	private void updateRock(float delta) {
-		Iterator<Rock> iterator = rocks.iterator();
-		while (iterator.hasNext()) {
-			Rock rock = iterator.next();
+		Iterator<Rock> rockIterator = rocks.iterator();
+		while (rockIterator.hasNext()) {
+			Rock rock = rockIterator.next();
 			rock.update();
-			// Remove the bullet if it's off-screen or any other condition you want to check
-//			if (rock.getBody().getPosition().x < 0 || rock.getBody().getPosition().x > camera.viewportWidth ||
-//					rock.getBody().getPosition().y < 0 || rock.getBody().getPosition().y > camera.viewportHeight) {
-//				iterator.remove();
-//			}
+			if (!rock.isAlive()) {
+				rockIterator.remove();
+				world.destroyBody(rock.getBody());
+			}
 		}
 	}
 
@@ -170,7 +186,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		float worldX = worldCoordinates.x;
 		float worldY = worldCoordinates.y;
 
-		float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y - (spaceship.getTexture().getHeight() / 2f), worldX - spaceship.getBody().getPosition().x - (spaceship.getTexture().getWidth() / 2f));
+		float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y , worldX - spaceship.getBody().getPosition().x );
 
 		spaceship.setTargetAngle(angle);
 
@@ -215,8 +231,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		float forceY = directionY / length * distance;
 
 		Bullet bullet = new Bullet(world,
-				spaceship.getBody().getPosition().x + (spaceship.getTexture().getWidth() / 2f),
-				spaceship.getBody().getPosition().y + (spaceship.getTexture().getHeight() / 2f),
+				spaceship.getBody().getPosition().x ,
+				spaceship.getBody().getPosition().y ,
 				10, 10);
 
 		bullet.setSpeed(forceX, forceY);

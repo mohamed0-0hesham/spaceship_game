@@ -22,6 +22,7 @@ public class Rock {
     public float angle;
     public float level;
     private Body rockBody;
+    private boolean isAlive=true;
 
     public Rock(World world, int level, float x, float y) {
         this.x = x;
@@ -54,13 +55,13 @@ public class Rock {
         rockBody.setMassData(massData);
 
         rockBody.setUserData(this);
-
     }
 
     public void setSpeed(float magnitude, float angle) {
         float speedX = (float) Math.cos(angle) * magnitude;
         float speedY = (float) Math.sin(angle) * magnitude;
         speed=new Vector2(speedX,speedY);
+//        rockBody.applyForceToCenter(speed,true);
     }
     public void update() {
         Vector2 position = rockBody.getPosition().add(speed);
@@ -83,7 +84,9 @@ public class Rock {
     }
 
     public void die() {
-        rockBody.getWorld().destroyBody(rockBody);
-        // Remove the Rock object from the game
+        isAlive=false;
+    }
+    public boolean isAlive(){
+        return isAlive;
     }
 }
