@@ -42,8 +42,8 @@ public class Rock {
         FixtureDef rockFixture = new FixtureDef();
         rockFixture.shape = shape;
         rockFixture.density = 0.00005f;
-        rockFixture.friction = 0.001f;
-        rockFixture.restitution = 0.001f;
+        rockFixture.friction = 0;
+        rockFixture.restitution = 0;
         rockBody = world.createBody(rockBodyDef);
         rockBody.createFixture(rockFixture);
 
@@ -72,6 +72,7 @@ public class Rock {
     }
 
     public void setSpeed(float magnitude, float angle) {
+        this.angle= angle;
         float speedX = (float) Math.cos(angle) * magnitude;
         float speedY = (float) Math.sin(angle) * magnitude;
         speed=new Vector2(speedX,speedY);
