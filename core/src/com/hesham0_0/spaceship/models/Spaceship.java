@@ -16,7 +16,7 @@ public class Spaceship {
     private final Texture spaceshipTexture;
     private final Body spaceshipBody;
     private Float targetAngle;
-    private float currentAngle;
+    public float currentAngle;
     public Spaceship(World world, float virtualWidth, float virtualHeight) {
         spaceshipTexture = new Texture("spaceship.png");
 

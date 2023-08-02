@@ -54,6 +54,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private Rock parentRock=null;
 	private int rockCounter=0;
 	private Texture rockTexture;
+	private boolean isPaused = false;
 
 
 	@Override
@@ -145,41 +146,44 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public void render() {
-		delta = Gdx.graphics.getDeltaTime();
-		world.step(1 / 60f, 6, 2);
-		spaceship.update(delta);
-		updateBullets(delta);
-		updateRock(delta);
-		updateExplosion(delta);
-		updateRing(delta);
-		ScreenUtils.clear(36 * RGB_COLOR_COEFFICIENT, 49 * RGB_COLOR_COEFFICIENT, 66 * RGB_COLOR_COEFFICIENT, 1);
-		batch.begin();
-		for (Bullet bullet : bullets) {
-			bullet.render(batch);
-		}
-		batch.end();
+		if (!isPaused) {
+			delta = Gdx.graphics.getDeltaTime();
+			world.step(1 / 60f, 6, 2);
+			spaceship.update(delta);
+			updateBullets(delta);
+			updateRock(delta);
+			updateExplosion(delta);
+			updateRing(delta);
+			ScreenUtils.clear(36 * RGB_COLOR_COEFFICIENT, 49 * RGB_COLOR_COEFFICIENT, 66 * RGB_COLOR_COEFFICIENT, 1);
 
-		batch.begin();
-		for (Rock rock : rocks) {
-			rock.render(batch);
-		}
-		batch.end();
+			batch.begin();
+			for (Bullet bullet : bullets) {
+				bullet.render(batch);
+			}
+			batch.end();
 
-		batch.begin();
-		for (Explosion explosion : explosions) {
-			explosion.render(batch);
-		}
-		batch.end();
+			batch.begin();
+			for (Rock rock : rocks) {
+				rock.render(batch);
+			}
+			batch.end();
 
-		batch.begin();
-		for (Ring ring : rings) {
-			ring.render(batch);
-		}
-		batch.end();
+			batch.begin();
+			for (Explosion explosion : explosions) {
+				explosion.render(batch);
+			}
+			batch.end();
 
-		batch.begin();
-		spaceship.render(batch);
-		batch.end();
+			batch.begin();
+			for (Ring ring : rings) {
+				ring.render(batch);
+			}
+			batch.end();
+
+			batch.begin();
+			spaceship.render(batch);
+			batch.end();
+		}
 	}
 
 	private void updateBullets(float delta) {
@@ -292,15 +296,14 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y , worldX - spaceship.getBody().getPosition().x );
 
 		spaceship.setTargetAngle(angle);
-
-		createBullets(worldX, worldY);
-		createRings(screenY);
+		createBullets();
 		return true;
 	}
 
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		return false;
+		createRings(0);
+		return true;
 	}
 
 	@Override
@@ -311,7 +314,8 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		return false;
+		createRings(screenY);
+		return true;
 	}
 
 	@Override
@@ -323,20 +327,18 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	public boolean scrolled(float amountX, float amountY) {
 		return false;
 	}
+	private void createBullets() {
 
-	private void createBullets(float worldX, float worldY) {
-
-		float directionX = worldX - spaceship.getBody().getPosition().x;
-		float directionY = worldY - spaceship.getBody().getPosition().y;
+		float directionX = (float) Math.cos(spaceship.currentAngle);
+		float directionY = (float) Math.sin(spaceship.currentAngle);
 
 		float distance = bulletSpeed * delta;
-		float length = (float) Math.sqrt(directionX * directionX + directionY * directionY);
-		float forceX = directionX / length * distance;
-		float forceY = directionY / length * distance;
+		float forceX = directionX * distance;
+		float forceY = directionY * distance;
 
 		Bullet bullet = new Bullet(world,
-				spaceship.getBody().getPosition().x ,
-				spaceship.getBody().getPosition().y ,
+				spaceship.getBody().getPosition().x,
+				spaceship.getBody().getPosition().y,
 				10, 10);
 
 		bullet.setSpeed(forceX, forceY);
@@ -432,5 +434,13 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				break;
 		}
 	}
+	@Override
+	public void pause() {
+		isPaused = true;
+	}
 
+	@Override
+	public void resume() {
+		isPaused = false;
+	}
 }
