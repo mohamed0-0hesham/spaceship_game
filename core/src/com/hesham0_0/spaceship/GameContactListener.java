@@ -8,7 +8,6 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.hesham0_0.spaceship.models.Bullet;
 import com.hesham0_0.spaceship.models.Ring;
 import com.hesham0_0.spaceship.models.Rock;
-import com.hesham0_0.spaceship.models.Spaceship;
 import com.hesham0_0.spaceship.models.Wall;
 
 public class GameContactListener implements ContactListener {
@@ -33,16 +32,6 @@ public class GameContactListener implements ContactListener {
             listener.bulletRockCollision(rock,bullet,contactPosition);
         }
 
-        if (bodyA instanceof Spaceship && bodyB instanceof Rock) {
-            Spaceship spaceship = (Spaceship) bodyA;
-            Rock rock = (Rock) bodyB;
-            listener.spaceshipRocksCollision(spaceship,rock,contactPosition);
-
-        } else if (bodyA instanceof Rock && bodyB instanceof Spaceship) {
-            Rock rock = (Rock) bodyA;
-            Spaceship spaceship = (Spaceship) bodyB;
-            listener.spaceshipRocksCollision(spaceship,rock, contactPosition);
-        }
 
         if (bodyA instanceof Ring && bodyB instanceof Rock) {
             Ring ring = (Ring) bodyA;

@@ -53,13 +53,16 @@ public class Bullet {
         body.setUserData(this);
     }
 
-    public void setSpeed(float speedX, float speedY) {
+    public void setSpeed(float angle, float magnitude) {
+        float speedX = (float) Math.cos(angle) * magnitude;
+        float speedY = (float) Math.sin(angle) * magnitude;
         speed=new Vector2(speedX,speedY);
     }
 
 
-    public void update() {
-        Vector2 position = body.getPosition().add(speed);
+    public void update(float delta) {
+        Vector2 distance = new Vector2(speed.x * delta, speed.y * delta);
+        Vector2 position = body.getPosition().add(distance);
         body.setTransform(position, position.angleRad());
     }
 

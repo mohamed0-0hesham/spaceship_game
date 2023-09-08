@@ -19,7 +19,6 @@ public class Ring {
     private static final float FRICTION = 0f;
     private static final float RESTITUTION = 0f;
     private float alpha;
-    private Spaceship spaceship;
     private float radius;
     private ShapeRenderer shapeRenderer;
     private int level;
@@ -31,14 +30,12 @@ public class Ring {
 
     private boolean isAlive=true;
 
-    public Ring(World world, Spaceship spaceship, float alpha, float radius, int level) {
+    public Ring(World world, Vector2 position, float alpha, float radius, ShapeRenderer shapeRenderer, int level) {
         this.world = world;
-        this.spaceship = spaceship;
         this.alpha = alpha;
         this.radius = radius;
         this.level=level;
-
-        shapeRenderer = new ShapeRenderer();
+        this.shapeRenderer=shapeRenderer;
 
         shape = new CircleShape();
         shape.setRadius(radius);
@@ -51,7 +48,7 @@ public class Ring {
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
-        bodyDef.position.set(spaceship.getBody().getPosition());
+        bodyDef.position.set(position);
 
         body = world.createBody(bodyDef);
         body.createFixture(fixtureDef);
@@ -64,17 +61,17 @@ public class Ring {
 
     public void render(SpriteBatch batch) {
         if (level==0){
-            color = new Color(100*RGB_COLOR_COEFFICIENT, 148*RGB_COLOR_COEFFICIENT, 237*RGB_COLOR_COEFFICIENT, alpha/1000);
+            color = new Color(100*RGB_COLOR_COEFFICIENT, 148*RGB_COLOR_COEFFICIENT, 237*RGB_COLOR_COEFFICIENT, 1);
         }else if (level==1){
-            color = new Color(66*RGB_COLOR_COEFFICIENT, 134*RGB_COLOR_COEFFICIENT, 244*RGB_COLOR_COEFFICIENT, alpha/1000);
+            color = new Color(66*RGB_COLOR_COEFFICIENT, 134*RGB_COLOR_COEFFICIENT, 244*RGB_COLOR_COEFFICIENT, 1);
         }else {
-            color = new Color(38*RGB_COLOR_COEFFICIENT, 67*RGB_COLOR_COEFFICIENT, 139*RGB_COLOR_COEFFICIENT, alpha/1000);
+            color = new Color(38*RGB_COLOR_COEFFICIENT, 67*RGB_COLOR_COEFFICIENT, 139*RGB_COLOR_COEFFICIENT, 1);
         }
         drawBodyPoints(batch,color);
     }
 
     public void update(float alpha) {
-        this.alpha=alpha;
+//        this.alpha=alpha;
     }
     public void drawBodyPoints(SpriteBatch batch, Color color){
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
@@ -90,7 +87,6 @@ public class Ring {
 
     public void dispose() {
         shape.dispose();
-        shapeRenderer.dispose();
         body.getWorld().destroyBody(body);
     }
 

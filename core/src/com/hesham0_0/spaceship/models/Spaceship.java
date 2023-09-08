@@ -1,10 +1,12 @@
 package com.hesham0_0.spaceship.models;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -30,19 +32,21 @@ public class Spaceship {
 
         // Create the spaceship shape
         PolygonShape shape = new PolygonShape();
-
         Vector2[] vertices = new Vector2[3];
         vertices[0] = new Vector2(0, spaceshipTexture.getHeight() / 2f);
         vertices[1] = new Vector2(-spaceshipTexture.getWidth() / 2f, -spaceshipTexture.getHeight() / 2f);
         vertices[2] = new Vector2(spaceshipTexture.getWidth() / 2f, -spaceshipTexture.getHeight() / 2f);
         shape.set(vertices);
 
+        shape.setRadius(spaceshipTexture.getWidth()/2f);
+
         // Create the spaceship fixture definition
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 1f;
+        fixtureDef.density = 0f;
         fixtureDef.friction = 0.4f;
         fixtureDef.restitution = 0.6f;
+        fixtureDef.isSensor=true;
 
         // Create the spaceship fixture
         spaceshipBody.createFixture(fixtureDef);
@@ -99,6 +103,7 @@ public class Spaceship {
                 false);
 
 //        drawBodyPoints(batch);
+//        drawSensorShape(batch);
     }
 
     public Body getBody() {
@@ -135,6 +140,46 @@ public class Spaceship {
             Vector2 vertexPos = spaceshipBody.getWorldPoint(vertex);
             shapeRenderer.circle(vertexPos.x, vertexPos.y, 5);
         }
+        shapeRenderer.end();
+        batch.begin();
+    }
+
+    public Polygon getSensorShape() {
+        Polygon polygon = new Polygon();
+        PolygonShape shape = (PolygonShape) spaceshipBody.getFixtureList().get(spaceshipBody.getFixtureList().size - 1).getShape();
+
+        int vertexCount = shape.getVertexCount();
+        float[] floatVertices = new float[vertexCount*2];
+
+        for (int i = 0; i < vertexCount; i++) {
+            Vector2 vertex = new Vector2();
+            shape.getVertex(i, vertex);
+
+            float cosAngle = MathUtils.cos((float) (currentAngle + Math.toRadians(-90)));
+            float sinAngle = MathUtils.sin((float) (currentAngle + Math.toRadians(-90)));
+            float rotatedX = cosAngle * vertex.x - sinAngle * vertex.y;
+            float rotatedY = sinAngle * vertex.x + cosAngle * vertex.y;
+
+            floatVertices[i * 2] = rotatedX + spaceshipBody.getPosition().x;
+            floatVertices[i * 2 + 1] = rotatedY + spaceshipBody.getPosition().y;
+        }
+
+        polygon.setVertices(floatVertices);
+        return polygon;
+    }
+
+    public void drawSensorShape(SpriteBatch batch) {
+        Polygon sensorShape = getSensorShape();
+
+        // Draw the sensor shape
+        batch.end();
+        ShapeRenderer shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+        shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
+        Gdx.gl.glLineWidth(15);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.BLUE);
+        shapeRenderer.polygon(sensorShape.getTransformedVertices());
         shapeRenderer.end();
         batch.begin();
     }

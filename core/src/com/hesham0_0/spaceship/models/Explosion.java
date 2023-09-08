@@ -13,27 +13,27 @@ public class Explosion {
     private float size;
     private float alpha;
     private float stateTime;
-    private final float durationTime = 0.5f;
+    private float durationTime = 0.5f;
     private boolean isAlive = true;
 
-    public Explosion(Vector2 position) {
+    public Explosion(Vector2 position,float durationTime) {
         explosionTexture = new Texture("explosion.png");
         this.frameWidth = explosionTexture.getWidth();
         this.frameHeight = explosionTexture.getHeight();
         this.x = position.x;
         this.y = position.y;
         this.stateTime = 0;
+        this.durationTime=durationTime;
         alpha = 1;
-        size = 1;
+        size = 0;
     }
 
     public void update(float delta) {
         stateTime += delta;
-        size = stateTime*2;
+        size = stateTime/durationTime;
         if (stateTime > durationTime) {
             isAlive = false;
         }
-        Gdx.app.log("Explosion", "Explosion stateTime = " + stateTime);
     }
 
     public void render(SpriteBatch batch) {
