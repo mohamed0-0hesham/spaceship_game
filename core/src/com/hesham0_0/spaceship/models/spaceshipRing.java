@@ -1,7 +1,6 @@
 package com.hesham0_0.spaceship.models;
 
-import static com.hesham0_0.spaceship.Main.RGB_COLOR_COEFFICIENT;
-
+import static com.hesham0_0.spaceship.SpaceshipGame.RGB_COLOR_COEFFICIENT;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -14,7 +13,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Ring {
+public class spaceshipRing {
     private static final float DENSITY = 0f;
     private static final float FRICTION = 0f;
     private static final float RESTITUTION = 0f;
@@ -30,7 +29,7 @@ public class Ring {
 
     private boolean isAlive=true;
 
-    public Ring(World world, Vector2 position, float alpha, float radius, ShapeRenderer shapeRenderer, int level) {
+    public spaceshipRing(World world, Vector2 position, float alpha, float radius, ShapeRenderer shapeRenderer, int level, boolean forceField) {
         this.world = world;
         this.alpha = alpha;
         this.radius = radius;
@@ -45,6 +44,7 @@ public class Ring {
         fixtureDef.density = DENSITY;
         fixtureDef.friction = FRICTION;
         fixtureDef.restitution = RESTITUTION;
+        fixtureDef.isSensor = !forceField;
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;

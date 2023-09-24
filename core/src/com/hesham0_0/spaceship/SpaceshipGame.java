@@ -1,5 +1,10 @@
 package com.hesham0_0.spaceship;
 
+import static com.hesham0_0.spaceship.SpaceshipUtils.MAX_PRESSURE;
+import static com.hesham0_0.spaceship.SpaceshipUtils.MILLIS_IN_SECOND;
+import static com.hesham0_0.spaceship.SpaceshipUtils.SQUEEZE_THRESHOLD;
+import static com.hesham0_0.spaceship.SpaceshipUtils.getRandomRockColor;
+import static com.hesham0_0.spaceship.SpaceshipUtils.getRandomRockRotation;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -18,18 +23,19 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.hesham0_0.spaceship.models.Bullet;
-import com.hesham0_0.spaceship.models.Explosion;
-import com.hesham0_0.spaceship.models.Ring;
-import com.hesham0_0.spaceship.models.Rock;
 import com.hesham0_0.spaceship.models.Spaceship;
+import com.hesham0_0.spaceship.models.SpaceshipExplosion;
 import com.hesham0_0.spaceship.models.Wall;
+import com.hesham0_0.spaceship.models.spaceshipBullet;
+import com.hesham0_0.spaceship.models.spaceshipRing;
+import com.hesham0_0.spaceship.models.spaceshipRock;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public class Main extends ApplicationAdapter implements InputProcessor {
+public class SpaceshipGame extends ApplicationAdapter implements InputProcessor {
 	private OrthographicCamera camera;
 	private final float virtualWidth = 720;
 	private float virtualHeight = 1280;
@@ -37,36 +43,45 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	private SpriteBatch batch;
 	private World world;
 	private Spaceship spaceship;
-	private List<Bullet> bullets;
+	private List<spaceshipBullet> bullets;
 	private float delta;
 	private Box2DDebugRenderer debugRenderer;
 	public static float RGB_COLOR_COEFFICIENT= 1/256f;
 	public static float RING_1_START_LEVEL= 1;
 	public static float RING_2_START_LEVEL= 33;
 	public static float RING_3_START_LEVEL= 67;
-	private List<Rock> rocks = new ArrayList<>();
-	private Ring ring_1;
-	private Ring ring_2;
-	private Ring ring_3;
-	private List<Explosion> explosions = new ArrayList<>();
-	private List<Ring> rings= new ArrayList<>();
+	private List<spaceshipRock> rocks = new ArrayList<>();
+	private spaceshipRing ring_1;
+	private spaceshipRing ring_2;
+	private spaceshipRing ring_3;
+	private List<SpaceshipExplosion> explosions = new ArrayList<>();
+	private List<spaceshipRing> rings= new ArrayList<>();
 	private List<Wall> walls= new ArrayList<>();
 	private float bulletSpeed = 200;
 	private float rockSpeed =200;
+	private float rockSpeedDifficultyCoefficient =0.5f;
 	private float explosionAnimationTime=1;
-	private long rockInterval = 1000;
+	private long rockInterval = 3;
 	private int rockCounter=1;
+	private static final float BLINKS_TIME = 2;
 	private Texture rockTexture;
 	PointsUpdateListener pointsUpdateListener;
 	private int points=0;
 	private ShapeRenderer shapeRenderer;
-	private boolean createBullet=false;
 	private boolean hideTheShip=false;
-	private boolean isGamePaused = true;
-	private final List<Rock> collisionRocks = new ArrayList<>();
-	private final List<Rock> collisionRingRocks = new ArrayList<>();
+	private boolean isGamePaused = false;
+	private final List<spaceshipRock> collisionRocks = new ArrayList<>();
+	private final List<spaceshipRock> collisionRingRocks = new ArrayList<>();
+	private boolean forceField;
+	private float bulletsFrequency;
+	private long lastShootingTime = 0;
+	private float bulletInterval;
+	private int rockLevels=1;
+	private boolean allowShooting = true;
+	private float totalBullets = 0;
+	private float totalSuccessfulHits = 0;
 
-    public Main(PointsUpdateListener pointsUpdateListener) {
+	public SpaceshipGame(PointsUpdateListener pointsUpdateListener) {
 		this.pointsUpdateListener = pointsUpdateListener;
     }
 
@@ -89,7 +104,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		Gdx.input.setInputProcessor(this);
 
 		spaceship = new Spaceship(world, virtualWidth, virtualHeight);
-		rockTexture =new Texture("rock3.png");
+		rockTexture =new Texture("spaceshipGame/rock3.png");
 		createWalls();
 		bullets = new ArrayList<>();
 
@@ -101,18 +116,36 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 					createRocks();
 				}
 			}
-		}, 0, rockInterval / 1000f);
+		}, 0, rockInterval );
+
+//		Timer bulletTimer = new Timer();
+//			bulletTimer.scheduleTask(new Timer.Task() {
+//				@Override
+//				public void run() {
+//						bulletInterval = (MILLIS_IN_SECOND / 5);
+//						if (!isGamePaused) {
+//							bulletTime();
+//						}
+//					}
+//			}, 0, 0.01f);
 
 		setCollisionListener();
 		shapeRenderer = new ShapeRenderer();
-		pointsUpdateListener.onPointsUpdated(points);
+		setGameSetting();
 	}
+	private void bulletTime(){
+			if ((System.currentTimeMillis() - lastShootingTime) >= bulletInterval && allowShooting) {
+				createBullets();
+				lastShootingTime=System.currentTimeMillis();
+			}
+		}
 
-	public void setSharedValues(float rockForceValue, float rockIntervalValue, float bulletForceValue, float explosionAnimationValue){
+	public void setSharedValues(float rockForceValue, float bulletForceValue, float explosionAnimationValue, float spaceshipBulletsFrequencyValue, boolean spaceshipForceField) {
 		rockSpeed *= rockForceValue;
-		rockInterval *= rockIntervalValue;
 		bulletSpeed *= bulletForceValue;
 		explosionAnimationTime *= explosionAnimationValue;
+		bulletsFrequency = spaceshipBulletsFrequencyValue;
+		forceField = spaceshipForceField;
 	}
 
 	private void createWalls() {
@@ -139,36 +172,42 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void setCollisionListener() {
-		GameContactListener contactListener = new GameContactListener(new ContactCallback() {
+		SpaceshipContactListener contactListener = new SpaceshipContactListener(new SpaceshipContactCallback() {
 			@Override
-			public void bulletRockCollision(Rock rock, Bullet bullet, Vector2 contactPosition) {
+			public void bulletRockCollision(spaceshipRock rock, spaceshipBullet bullet, Vector2 contactPosition) {
 				if (!collisionRingRocks.contains(rock)) {
-					collisionRingRocks.add(rock);
+					totalSuccessfulHits += 1;
+					rock.decreaseHealth();
+					if (rock.health == 0) {
+						collisionRingRocks.add(rock);
+						createExplosion(contactPosition,"+", rock.level);
+						points = points + rock.level;
+						setGameSetting();
+					}else {
+						createExplosion(contactPosition,"+",0);
+					}
 					bullet.die();
-					createExplosion(contactPosition);
-					points = points + rock.level;
-					pointsUpdateListener.onPointsUpdated(points);
 				}
 			}
 
 
 			@Override
-			public void ringRocksCollision(Ring ring, Rock rock, Vector2 contactPosition) {
-				if(!collisionRingRocks.contains(rock)){
+			public void ringRocksCollision(spaceshipRing ring, spaceshipRock rock, Vector2 contactPosition) {
+				if (forceField && !collisionRingRocks.contains(rock)) {
 					collisionRingRocks.add(rock);
-					createExplosion(contactPosition);
-					points=points+rock.level;
-					pointsUpdateListener.onPointsUpdated(points);
+					createExplosion(contactPosition, "+",rock.level);
+					points = points + rock.level;
+					setGameSetting();
 				}
 			}
 
 			@Override
-			public void wallRocksCollision(Wall wall, Rock rock) {
+			public void wallRocksCollision(Wall wall, spaceshipRock rock) {
 				rock.die();
 			}
 
 			@Override
-			public void wallBulletCollision(Wall wall, Bullet bullet) {
+			public void wallBulletCollision(Wall wall, spaceshipBullet bullet) {
 				bullet.die();
 			}
 		});
@@ -181,9 +220,6 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		world.step(1 / 60f, 6, 2);
 		if(!isGamePaused) {
 			createRings();
-			if (createBullet) {
-				createBullets();
-			}
 			spaceship.update(delta);
 			updateBullets(delta);
 			updateRock(delta);
@@ -192,31 +228,30 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		}
 		ScreenUtils.clear(36 * RGB_COLOR_COEFFICIENT, 49 * RGB_COLOR_COEFFICIENT, 66 * RGB_COLOR_COEFFICIENT, 1);
 		batch.begin();
-		for (Bullet bullet : bullets) {
+		for (spaceshipBullet bullet : bullets) {
 			bullet.render(batch);
 		}
 		batch.end();
 
 		batch.begin();
-		for (Rock rock : rocks) {
+		for (spaceshipRock rock : rocks) {
 			rock.render(batch);
 		}
 		batch.end();
-
-		if(!hideTheShip) {
+		if (spaceship.state != SpaceshipState.HIDDEN) {
 			batch.begin();
 			spaceship.render(batch);
 			batch.end();
 		}
 
 		batch.begin();
-		for (Explosion explosion : explosions) {
+		for (SpaceshipExplosion explosion : explosions) {
 			explosion.render(batch);
 		}
 		batch.end();
 
 		batch.begin();
-		for (Ring ring : rings) {
+		for (spaceshipRing ring : rings) {
 			ring.render(batch);
 		}
 		batch.end();
@@ -225,9 +260,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void updateBullets(float delta) {
-		Iterator<Bullet> bulletIterator = bullets.iterator();
+		Iterator<spaceshipBullet> bulletIterator = bullets.iterator();
 		while (bulletIterator.hasNext()) {
-			Bullet bullet = bulletIterator.next();
+			spaceshipBullet bullet = bulletIterator.next();
 			bullet.update(delta);
 			if (!bullet.isAlive()) {
 				bulletIterator.remove();
@@ -237,30 +272,47 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void updateRock(float delta) {
-		Iterator<Rock> rockCollisionIterator = collisionRingRocks.iterator();
+		Iterator<spaceshipRock> rockCollisionIterator = collisionRingRocks.iterator();
 		while (rockCollisionIterator.hasNext()) {
-			Rock rock = rockCollisionIterator.next();
+			spaceshipRock rock = rockCollisionIterator.next();
 			createChildRocks(rock);
 			rock.die();
 			rockCollisionIterator.remove();
 		}
 
-		Iterator<Rock> rockIterator = rocks.iterator();
+		Iterator<spaceshipRock> rockIterator = rocks.iterator();
 		while (rockIterator.hasNext()) {
-			Rock rock = rockIterator.next();
+			spaceshipRock rock = rockIterator.next();
+
 			if (Intersector.overlapConvexPolygons(spaceship.getSensorShape(), rock.getRockPolygonShape()) && !collisionRocks.contains(rock)) {
-				createExplosion(spaceship.getBody().getPosition());
 				points = Math.max(points - rock.level, 0);
-				if (points==0){
-					hideTheShip=true;
+				rock.decreaseHealth();
+				if (rock.health == 0) {
+					collisionRingRocks.add(rock);
+				}
+				if (points == 0) {
+					createExplosion(spaceship.getBody().getPosition(),"-", rock.level);
+					spaceship.state = SpaceshipState.HIDDEN;
 					Timer.schedule(new Timer.Task() {
 						@Override
 						public void run() {
-							hideTheShip = false;
+							spaceship.state= SpaceshipState.STABLE;
 						}
 					}, explosionAnimationTime);
 				}
-				pointsUpdateListener.onPointsUpdated(points);
+				else {
+					createExplosion(rock.getBody().getPosition(),"-", rock.level);
+					if (spaceship.state != SpaceshipState.BLINKS){
+						spaceship.state= SpaceshipState.BLINKS;
+						Timer.schedule(new Timer.Task() {
+							@Override
+							public void run() {
+								spaceship.state= SpaceshipState.STABLE;
+							}
+						}, BLINKS_TIME);
+					}
+				}
+				setGameSetting();
 				collisionRocks.add(rock);
 				}
 			rock.update(delta);
@@ -273,9 +325,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void updateExplosion(float delta) {
-		Iterator<Explosion> explosionIterator = explosions.iterator();
+		Iterator<SpaceshipExplosion> explosionIterator = explosions.iterator();
 		while (explosionIterator.hasNext()) {
-			Explosion explosion = explosionIterator.next();
+			SpaceshipExplosion explosion = explosionIterator.next();
 			explosion.update(delta);
 			if (!explosion.isAlive()) {
 				explosionIterator.remove();
@@ -284,9 +336,9 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	}
 
 	private void updateRing(float delta) {
-		Iterator<Ring> ringIterator = rings.iterator();
+		Iterator<spaceshipRing> ringIterator = rings.iterator();
 		while (ringIterator.hasNext()) {
-			Ring ring = ringIterator.next();
+			spaceshipRing ring = ringIterator.next();
 			if (!ring.isAlive()) {
 				ringIterator.remove();
 				world.destroyBody(ring.getBody());
@@ -310,13 +362,13 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	public void dispose() {
 		batch.dispose();
 		spaceship.dispose();
-		for (Bullet bullet : bullets) {
+		for (spaceshipBullet bullet : bullets) {
 			bullet.dispose();
 		}
-		for (Rock rock : rocks) {
+		for (spaceshipRock rock : rocks) {
 			rock.dispose();
 		}
-		for (Ring ring : rings) {
+		for (spaceshipRing ring : rings) {
 			ring.dispose();
 		}
 		for (Wall wall : walls) {
@@ -353,7 +405,7 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 		float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y , worldX - spaceship.getBody().getPosition().x );
 
 		spaceship.setTargetAngle(angle);
-
+		createBullets();
 		return true;
 	}
 
@@ -370,6 +422,13 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		if (pointer == 0) {
+			Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
+			float worldX = worldCoordinates.x;
+			float worldY = worldCoordinates.y;
+			float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y, worldX - spaceship.getBody().getPosition().x);
+			spaceship.setDraggingAngle(angle);
+		}
 		return false;
 	}
 
@@ -382,83 +441,87 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 	public boolean scrolled(float amountX, float amountY) {
 		return false;
 	}
+
 	private void createBullets() {
-		Bullet bullet = new Bullet(world,
+		spaceshipBullet bullet = new spaceshipBullet(world,
 				spaceship.getBody().getPosition().x,
 				spaceship.getBody().getPosition().y,
 				10, 10);
+		totalBullets += 1;
 
 		bullet.setSpeed(spaceship.currentAngle, bulletSpeed);
 		bullets.add(bullet);
-		createBullet=false;
 	}
 
 	private void createRocks() {
 		Random random = new Random();
 		int edge = random.nextInt(4); // generate a random edge index from 0 to 3
+		float halfRockWidth = rockTexture.getWidth() / 2f;
 		float x, y, angle;
 		switch (edge) {
 			// top edge
 			// random angle between -90 and 90 degrees
 			case 1: // right edge
-				x = camera.viewportWidth;
+				x = camera.viewportWidth + halfRockWidth;
 				y = random.nextFloat() * camera.viewportHeight;
 				angle = 135 + random.nextFloat() * 225; // random angle between 180-+45 degrees
 				break;
 			case 2: // bottom edge
 				x = random.nextFloat() * camera.viewportWidth;
-				y = 0;
+				y = 0 - halfRockWidth;
 				angle = 45 + random.nextFloat() * 135; // random angle between 90-+45 degrees
 				break;
 			case 3: // left edge
-				x = 0;
+				x = 0 - halfRockWidth;
 				y = random.nextFloat() * camera.viewportHeight;
 				angle = -45 + random.nextFloat() * 45; // random angle between 0-+45 and 180 degrees
 				break;
 			default: // fallback to top edge
 				x = random.nextFloat() * camera.viewportWidth;
-				y = camera.viewportHeight;
+				y = camera.viewportHeight + halfRockWidth;
 				angle = -135 + random.nextFloat() * -45; // random angle between 0-+(-90) and 180 degrees
 				break;
 		}
-		int randomLevel = random.nextInt(3) + 1;
-		Rock rock = new Rock(world, randomLevel, x, y);
+		int randomLevel = random.nextInt(rockLevels) + 1;
+		spaceshipRock rock = new spaceshipRock(world, randomLevel, x, y, getRandomRockColor(), getRandomRockRotation());
 		rocks.add(rock);
 
-		if(rockCounter%3==0){
-			rock.setSpeed(rockSpeed, (float) Math.toRadians(angle));
+		if (rockCounter % 3 == 0) {
+			rock.setSpeed(rockSpeed* rockSpeedDifficultyCoefficient, (float) Math.toRadians(angle));
 		}else {
-			rock.moveTo(spaceship.getBody().getPosition(),rockSpeed);
+			rock.moveTo(spaceship.getBody().getPosition(),rockSpeed* rockSpeedDifficultyCoefficient);
 		}
 		rockCounter++;
 	}
-	private void createChildRocks(Rock parentRock) {
-		if (parentRock.level==1){return;}
-		int levelRock1=1;
+	private void createChildRocks(spaceshipRock parentRock) {
+		if (parentRock.level == 1) {
+			return;
+		}
+		int levelRock1 = 1;
 		int levelRock2 = parentRock.level == 3 ? 2 : 1;
-		Rock rock1 = new Rock(world, levelRock1, parentRock.getBody().getPosition().x, parentRock.getBody().getPosition().y);
-		rock1.setSpeed(rockSpeed, parentRock.angle+(float) Math.toRadians(45));
-		Rock rock2 = new Rock(world, levelRock2, parentRock.getBody().getPosition().x, parentRock.getBody().getPosition().y);
-		rock2.setSpeed(rockSpeed, parentRock.angle+(float) Math.toRadians(-45));
+		spaceshipRock rock1 = new spaceshipRock(world, levelRock1, parentRock.getBody().getPosition().x, parentRock.getBody().getPosition().y, parentRock.color, parentRock.rotationSpeed);
+		rock1.setSpeed(rockSpeed* rockSpeedDifficultyCoefficient, parentRock.angle + (float) Math.toRadians(45));
+		spaceshipRock rock2 = new spaceshipRock(world, levelRock2, parentRock.getBody().getPosition().x, parentRock.getBody().getPosition().y, parentRock.color, parentRock.rotationSpeed);
+		rock2.setSpeed(rockSpeed* rockSpeedDifficultyCoefficient, parentRock.angle + (float) Math.toRadians(-45));
 		rocks.add(rock1);
 		rocks.add(rock2);
 	}
 
-	private void createExplosion(Vector2 contactPosition) {
-		Explosion explosion = new Explosion(contactPosition,explosionAnimationTime);
+	private void createExplosion(Vector2 contactPosition,String signal,int score) {
+		SpaceshipExplosion explosion = new SpaceshipExplosion(contactPosition, explosionAnimationTime,signal, score);
 		explosions.add(explosion);
 	}
 
 	private void createRings() {
-		createOrDestroyRing(100, RING_1_START_LEVEL, spaceship.getTexture().getWidth() * 0.8f, ring_1,shapeRenderer, 0);
-		createOrDestroyRing(100, RING_2_START_LEVEL, spaceship.getTexture().getWidth() * 1.1f, ring_2, shapeRenderer, 1);
-		createOrDestroyRing(100, RING_3_START_LEVEL, spaceship.getTexture().getWidth() * 1.4f, ring_3, shapeRenderer, 2);
+		createOrDestroyRing(0, RING_1_START_LEVEL, spaceship.getTexture().getWidth() * 0.8f, ring_1,shapeRenderer, 0);
+		createOrDestroyRing(0, RING_2_START_LEVEL, spaceship.getTexture().getWidth() * 1.1f, ring_2, shapeRenderer, 1);
+		createOrDestroyRing(0, RING_3_START_LEVEL, spaceship.getTexture().getWidth() * 1.4f, ring_3, shapeRenderer, 2);
 	}
 
-	private void createOrDestroyRing(float pressure, float startLevel, float width, Ring ring, ShapeRenderer shapeRenderer, int index) {
+	private void createOrDestroyRing(float pressure, float startLevel, float width, spaceshipRing ring, ShapeRenderer shapeRenderer, int index) {
 		if (pressure > startLevel) {
 			if (ring == null || !ring.isAlive()) {
-				ring = new Ring(world, spaceship.getBody().getPosition(), pressure - startLevel, width,shapeRenderer, index);
+				ring = new spaceshipRing(world, spaceship.getBody().getPosition(), pressure - startLevel, width, shapeRenderer, index, forceField);
 				rings.add(ring);
 			} else {
 				ring.update(pressure - startLevel);
@@ -480,5 +543,37 @@ public class Main extends ApplicationAdapter implements InputProcessor {
 				ring_3 = ring;
 				break;
 		}
+	}
+	public void alterGameStatus(boolean isPaused) {
+		this.isGamePaused = isPaused;
+	}
+
+	public void setGameSetting() {
+		pointsUpdateListener.onPointsUpdated(points);
+		if (points >= 0 && points <= 25) {
+			setDifficultyValues(1, 0.5f, 3);
+		} else if (points > 25 && points <= 50) {
+			setDifficultyValues(2, 0.75f, 3);
+		} else if (points > 51 && points <= 75) {
+			setDifficultyValues(3, 1f, 3);
+		} else if (points > 76 && points <= 100) {
+			setDifficultyValues(3, 1f, 2.5f);
+		} else if (points > 101 && points <= 125) {
+			setDifficultyValues(3, 1f, 2);
+		} else if (points > 126 && points <= 150) {
+			setDifficultyValues(3, 1.5f, 2);
+		} else if (points > 150) {
+			setDifficultyValues(3, 2f, 2);
+		}
+	}
+
+	public void setDifficultyValues(int levels, float speed, float interval) {
+		rockLevels = levels;
+		rockSpeedDifficultyCoefficient = speed;
+		rockInterval = (long) interval;
+	}
+
+	public void setAllowShooting(boolean allowShooting) {
+		this.allowShooting =allowShooting;
 	}
 }

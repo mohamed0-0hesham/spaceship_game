@@ -1,6 +1,5 @@
 package com.hesham0_0.spaceship.models;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,15 +11,15 @@ import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Bullet {
+public class spaceshipBullet {
     private Body body;
     private Color color;
     private Vector2 speed;
     private Texture bulletTexture;
     private boolean isAlive=true;
 
-    public Bullet(World world, float x, float y, float width, float height) {
-        bulletTexture = new Texture("bullet.png");
+    public spaceshipBullet(World world, float x, float y, float width, float height) {
+        bulletTexture = new Texture("spaceshipGame/bullet.png");
 
         // Create the body definition
         BodyDef bodyDef = new BodyDef();

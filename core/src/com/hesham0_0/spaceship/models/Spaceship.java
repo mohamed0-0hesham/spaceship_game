@@ -1,5 +1,6 @@
 package com.hesham0_0.spaceship.models;
 
+import static com.hesham0_0.spaceship.SpaceshipState.STABLE;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,14 +14,21 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.hesham0_0.spaceship.SpaceshipState;
 
 public class Spaceship {
     private final Texture spaceshipTexture;
     private final Body spaceshipBody;
     private Float targetAngle;
     public float currentAngle;
+    private float interpolationSpeed;
+    public float alpha = 0;
+    public float signal = 1;
+    public SpaceshipState state = STABLE;
+
     public Spaceship(World world, float virtualWidth, float virtualHeight) {
-        spaceshipTexture = new Texture("spaceship.png");
+
+        spaceshipTexture = new Texture("spaceshipGame/spaceship.png");
 
         // Create the spaceship body definition
         BodyDef bodyDef = new BodyDef();
@@ -61,9 +69,19 @@ public class Spaceship {
 
     public void update(float delta) {
         updateRotation(delta);
+        if (state == SpaceshipState.BLINKS) {
+            updateAlpha(delta);
+        } else {
+            alpha = 1;
+        }
     }
 
     public void setTargetAngle(float targetAngle) {
+        interpolationSpeed = 10f;
+        this.targetAngle = targetAngle;
+    }
+    public void setDraggingAngle(float targetAngle) {
+        interpolationSpeed = 50f;
         this.targetAngle = targetAngle;
     }
     public Float getTargetAngle() {
@@ -79,14 +97,24 @@ public class Spaceship {
         else if (angleDiff > MathUtils.PI)
             angleDiff -= MathUtils.PI2;
 
-        float interpolationSpeed = 10f;
+        interpolationSpeed = 10f;
 
         currentAngle += angleDiff * interpolationSpeed * delta;
         spaceshipBody.setTransform(spaceshipBody.getPosition(), (float) (currentAngle- Math.toRadians(90)));
     }
+    public void updateAlpha(float delta) {
+        float interpolationSpeed = 10f;
+        if (alpha > 1) {
+            signal = -1;
+        } else if (alpha < 0) {
+            signal = 1;
+        }
+        alpha += signal * interpolationSpeed * delta;
+    }
 
 
     public void render(SpriteBatch batch) {
+        batch.setColor(new Color(1,1,1,alpha));
         batch.draw(spaceshipTexture,
                 spaceshipBody.getPosition().x - spaceshipTexture.getWidth() / 2f,
                 spaceshipBody.getPosition().y - spaceshipTexture.getHeight() / 2f,
@@ -101,7 +129,7 @@ public class Spaceship {
                 spaceshipTexture.getHeight(),
                 false,
                 false);
-
+        batch.setColor(Color.WHITE);
 //        drawBodyPoints(batch);
 //        drawSensorShape(batch);
     }
