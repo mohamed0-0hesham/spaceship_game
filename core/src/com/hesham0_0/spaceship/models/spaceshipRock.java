@@ -1,9 +1,12 @@
 package com.hesham0_0.spaceship.models;
 
-import static com.badlogic.gdx.math.MathUtils.random;
-
+import static com.hesham0_0.spaceship.SpaceshipUtils.getRandomRockPath;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -12,25 +15,34 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Rock {
+public class spaceshipRock {
     private Vector2 speed;
-    private Texture rockTexture;
+    private final Texture rockTexture;
+    private final Sprite rockSprite;
     public static int rockRadius;
-    Texture[] rockTextures = {new Texture("rock1.png"), new Texture("rock2.png"), new Texture("rock3.png")};
-
     public float x;
     public float y;
     public float angle;
-    public float level;
-    private Body rockBody;
+    public int level;
+    public int health;
+    private final Body rockBody;
     private boolean isAlive=true;
+    public Color color ;
+    public float rotationAngle = 0;
+    public float rotationSpeed;
 
-    public Rock(World world, int level, float x, float y) {
+    public spaceshipRock(World world, int level, float x, float y, Color color,float rotationSpeed) {
         this.x = x;
         this.y = y;
         this.level = level;
-        rockTexture = rockTextures[level - 1];
+        this.health = level;
+        this.color = color;
+        this.rotationSpeed = rotationSpeed;
+
+        rockTexture = new Texture(getRandomRockPath(level));
         rockRadius = rockTexture.getWidth() / 2;
+        rockSprite = new Sprite(rockTexture);
+        rockSprite.setColor(color);
 
         BodyDef rockBodyDef = new BodyDef();
         rockBodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -78,14 +90,20 @@ public class Rock {
         speed=new Vector2(speedX,speedY);
     }
     public void update(float delta) {
-        Vector2 distance=new Vector2(speed.x*delta,speed.y*delta);
+        rotationAngle += delta * rotationSpeed;
+        Vector2 distance = new Vector2(speed.x * delta, speed.y * delta);
         Vector2 position = rockBody.getPosition().add(distance);
         rockBody.setTransform(position, position.angleRad());
     }
 
     public void render(SpriteBatch batch) {
-        batch.draw(rockTexture, rockBody.getPosition().x - rockTexture.getWidth() / 2f,
-                rockBody.getPosition().y - rockTexture.getHeight() / 2f);
+        rockSprite.setRotation(rotationAngle * MathUtils.radiansToDegrees);
+        rockSprite.setPosition(
+                rockBody.getPosition().x - rockSprite.getWidth() / 2f,
+                rockBody.getPosition().y - rockSprite.getHeight() / 2f
+        );
+        rockSprite.draw(batch);
+
     }
 
     public void dispose() {
@@ -101,7 +119,31 @@ public class Rock {
     public void die() {
         isAlive=false;
     }
+
+    public void decreaseHealth() {
+        health -= 1;
+    }
     public boolean isAlive(){
         return isAlive;
+    }
+
+    public Polygon getRockPolygonShape() {
+        Polygon polygon = new Polygon();
+        int numVertices = 16;
+
+        float[] vertices = new float[numVertices * 2];
+        float angleIncrement = 2 * MathUtils.PI / numVertices;
+
+        for (int i = 0; i < numVertices; i++) {
+            float angle = i * angleIncrement;
+            Vector2 vertex = new Vector2(rockTexture.getWidth() / 2f * MathUtils.cos(angle), rockTexture.getWidth() / 2f * MathUtils.sin(angle));
+            vertices[i * 2] = vertex.x+rockBody.getPosition().x;
+            vertices[i * 2 + 1] = vertex.y+rockBody.getPosition().y;
+        }
+        polygon.setVertices(vertices);
+        return polygon;
+    }
+    public Texture getTexture(){
+        return rockTexture;
     }
 }

@@ -1,7 +1,5 @@
 package com.hesham0_0.spaceship.models;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -12,15 +10,14 @@ import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-public class Bullet {
-    private Body body;
-    private Color color;
+public class spaceshipBullet {
+    private final Body body;
     private Vector2 speed;
-    private Texture bulletTexture;
+    private final Texture bulletTexture;
     private boolean isAlive=true;
 
-    public Bullet(World world, float x, float y, float width, float height) {
-        bulletTexture = new Texture("bullet.png");
+    public spaceshipBullet(World world, float x, float y, float width, float height) {
+        bulletTexture = new Texture("spaceshipGame/bullet.png");
 
         // Create the body definition
         BodyDef bodyDef = new BodyDef();
@@ -53,13 +50,16 @@ public class Bullet {
         body.setUserData(this);
     }
 
-    public void setSpeed(float speedX, float speedY) {
+    public void setSpeed(float angle, float magnitude) {
+        float speedX = (float) Math.cos(angle) * magnitude;
+        float speedY = (float) Math.sin(angle) * magnitude;
         speed=new Vector2(speedX,speedY);
     }
 
 
-    public void update() {
-        Vector2 position = body.getPosition().add(speed);
+    public void update(float delta) {
+        Vector2 distance = new Vector2(speed.x * delta, speed.y * delta);
+        Vector2 position = body.getPosition().add(distance);
         body.setTransform(position, position.angleRad());
     }
 
@@ -79,8 +79,7 @@ public class Bullet {
     }
 
     public void die() {
-        isAlive=false;
-        // Remove the Rock object from the game
+        isAlive = false;
     }
     public boolean isAlive(){
         return isAlive;
