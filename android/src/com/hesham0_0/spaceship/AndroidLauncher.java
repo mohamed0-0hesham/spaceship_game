@@ -13,10 +13,10 @@ public class AndroidLauncher extends AndroidApplication {
 	@Override
 	protected void onCreate (Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
 		AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
 		PointsUpdateListener pointsUpdateListener = points -> runOnUiThread(() -> Log.d("points","points = "+points));
 		SpaceshipGame game=new SpaceshipGame(pointsUpdateListener);
-		game.setSharedValues(1,2,0.5f,5,true);
 		initialize(game, config);
 	}
 }

@@ -14,43 +14,32 @@ public class Wall {
     private static final float RESTITUTION = 1f;
     private final Body body;
     public String direction;
-
-
     public Wall(World world, Vector2 position, float height, float width, String direction) {
         this.direction=direction;
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(width,height);
-
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = DENSITY;
         fixtureDef.friction = FRICTION;
         fixtureDef.restitution = RESTITUTION;
-
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(position);
-
         body = world.createBody(bodyDef);
         body.createFixture(fixtureDef);
         body.setUserData(this);
-
         MassData massData = new MassData();
         massData.mass = 10000f;
         body.setMassData(massData);
         shape.dispose();
     }
-
     public void update() {
-
     }
-
     public void dispose() {
         body.getWorld().destroyBody(body);
     }
-
     public Body getBody() {
         return body;
     }
 }
-

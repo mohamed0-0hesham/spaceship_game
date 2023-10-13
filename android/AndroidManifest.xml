@@ -11,7 +11,6 @@ xmlns:tools="http://schemas.android.com/tools">
         android:fullBackupContent="true"
         android:icon="@drawable/ic_launcher"
         android:isGame="true"
-        android:appCategory="game"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         tools:ignore="UnusedAttribute"
@@ -28,8 +27,10 @@ xmlns:tools="http://schemas.android.com/tools">
         </activity>
 <!--        <activity-->
 <!--            android:name="com.hesham0_0.spaceship.MainActivity"-->
+<!--            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenSize|screenLayout"-->
+<!--            android:exported="true"-->
 <!--            android:screenOrientation="portrait"-->
-<!--            android:exported="true">-->
+<!--            android:theme="@style/AppTheme">-->
 <!--            <intent-filter>-->
 <!--                <action android:name="android.intent.action.MAIN" />-->
 <!--                <category android:name="android.intent.category.LAUNCHER" />-->

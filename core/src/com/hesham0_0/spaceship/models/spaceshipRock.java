@@ -1,13 +1,10 @@
 package com.hesham0_0.spaceship.models;
 
 import static com.hesham0_0.spaceship.SpaceshipUtils.getRandomRockPath;
-
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
@@ -17,14 +14,12 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
-import com.hesham0_0.spaceship.SpaceshipUtils;
 
 public class spaceshipRock {
     private Vector2 speed;
     private final Texture rockTexture;
     private final Sprite rockSprite;
     public static int rockRadius;
-    private Texture numTexture;
     public float x;
     public float y;
     public float angle;
@@ -33,7 +28,7 @@ public class spaceshipRock {
     private final Body rockBody;
     private boolean isAlive=true;
     public Color color ;
-    private float rotationAngle = 0;
+    public float rotationAngle = 0;
     public float rotationSpeed;
 
     public spaceshipRock(World world, int level, float x, float y, Color color,float rotationSpeed) {
@@ -44,7 +39,6 @@ public class spaceshipRock {
         this.color = color;
         this.rotationSpeed = rotationSpeed;
 
-        numTexture = new Texture(SpaceshipUtils.getTextureNumberPath(health));
         rockTexture = new Texture(getRandomRockPath(level));
         rockRadius = rockTexture.getWidth() / 2;
         rockSprite = new Sprite(rockTexture);
@@ -110,11 +104,6 @@ public class spaceshipRock {
         );
         rockSprite.draw(batch);
 
-        batch.draw(numTexture,
-                rockBody.getPosition().x - numTexture.getWidth() / 2f,
-                rockBody.getPosition().y - numTexture.getHeight() / 2f
-        );
-//        drawRockPolygonShape(batch);
     }
 
     public void dispose() {
@@ -133,7 +122,6 @@ public class spaceshipRock {
 
     public void decreaseHealth() {
         health -= 1;
-        numTexture = new Texture(SpaceshipUtils.getTextureNumberPath(health));
     }
     public boolean isAlive(){
         return isAlive;
@@ -155,19 +143,7 @@ public class spaceshipRock {
         polygon.setVertices(vertices);
         return polygon;
     }
-
-    public void drawRockPolygonShape(SpriteBatch batch) {
-        Polygon sensorShape = getRockPolygonShape();
-
-        batch.end();
-        ShapeRenderer shapeRenderer = new ShapeRenderer();
-        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-        shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
-        Gdx.gl.glLineWidth(15);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setColor(Color.BLUE);
-        shapeRenderer.polygon(sensorShape.getTransformedVertices());
-        shapeRenderer.end();
-        batch.begin();
+    public Texture getTexture(){
+        return rockTexture;
     }
 }

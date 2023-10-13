@@ -10,6 +10,14 @@ public class SpaceshipUtils {
     public static int SQUEEZE_THRESHOLD = 15;
     public static float colorAttr1 = 1f;
     public static float colorAttr2 = 0.5f;
+    public static float RGB_COLOR_COEFFICIENT = 1 / 256f;
+    public static float[] RING_START_LEVEL = {1, 33, 67};
+    public static float[] RING_FULL_VAlUE_LEVEL = {33, 34, 33};
+    public static Color[] RINGS_COLORS = {
+            new Color(100 * RGB_COLOR_COEFFICIENT, 148 * RGB_COLOR_COEFFICIENT, 237 * RGB_COLOR_COEFFICIENT, 0),
+            new Color(66 * RGB_COLOR_COEFFICIENT, 134 * RGB_COLOR_COEFFICIENT, 244 * RGB_COLOR_COEFFICIENT, 0),
+            new Color(38 * RGB_COLOR_COEFFICIENT, 67 * RGB_COLOR_COEFFICIENT, 139 * RGB_COLOR_COEFFICIENT, 0)
+    };
     public static Color[] ROCKS_COLORS = {
             new Color(colorAttr1, colorAttr2, colorAttr2, 1f),
             new Color(colorAttr1, colorAttr1, colorAttr2, 1f),
@@ -18,6 +26,15 @@ public class SpaceshipUtils {
             new Color(colorAttr2, colorAttr1, colorAttr2, 1f),
             new Color(colorAttr2, colorAttr2, colorAttr1, 1f)
     };
+
+    // ---------------------(game speed setting)--------------------
+    public static final float rockSpeed = 200 * 1f;
+    public static final float bulletSpeed = 200 * 4f;
+    public static final float bulletsFrequency = 7.0f;
+    public static final float explosionAnimationTime = 0.8f;
+    public static final boolean forceField = false;
+    //-----------------------------------------------------------
+
     public static String getTextureNumberPath(int health){
         return "spaceshipGame/spaceship_num_"+health+".png";
     }

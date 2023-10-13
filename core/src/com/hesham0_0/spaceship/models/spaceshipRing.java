@@ -1,8 +1,12 @@
 package com.hesham0_0.spaceship.models;
 
-import static com.hesham0_0.spaceship.SpaceshipGame.RGB_COLOR_COEFFICIENT;
+import static com.hesham0_0.spaceship.SpaceshipUtils.RINGS_COLORS;
+import static com.hesham0_0.spaceship.SpaceshipUtils.RING_FULL_VAlUE_LEVEL;
+import static com.hesham0_0.spaceship.SpaceshipUtils.RING_START_LEVEL;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -17,29 +21,24 @@ public class spaceshipRing {
     private static final float DENSITY = 0f;
     private static final float FRICTION = 0f;
     private static final float RESTITUTION = 0f;
-    private float alpha;
-    private float radius;
-    private ShapeRenderer shapeRenderer;
-    private int level;
-    private Color color;
-    private Body body;
-    private World world;
-    private CircleShape shape;
-    private FixtureDef fixtureDef;
-
+    private final float radius;
+    private final ShapeRenderer shapeRenderer;
+    private final int level;
+    private final Body body;
+    private final CircleShape shape;
+    private final Color color;
     private boolean isAlive=true;
 
-    public spaceshipRing(World world, Vector2 position, float alpha, float radius, ShapeRenderer shapeRenderer, int level, boolean forceField) {
-        this.world = world;
-        this.alpha = alpha;
+    public spaceshipRing(World world, Vector2 position, float radius, ShapeRenderer shapeRenderer, int level, boolean forceField) {
         this.radius = radius;
         this.level=level;
         this.shapeRenderer=shapeRenderer;
 
         shape = new CircleShape();
         shape.setRadius(radius);
+        color = RINGS_COLORS[level];
 
-        fixtureDef = new FixtureDef();
+        FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
         fixtureDef.density = DENSITY;
         fixtureDef.friction = FRICTION;
@@ -60,20 +59,16 @@ public class spaceshipRing {
     }
 
     public void render(SpriteBatch batch) {
-        if (level==0){
-            color = new Color(100*RGB_COLOR_COEFFICIENT, 148*RGB_COLOR_COEFFICIENT, 237*RGB_COLOR_COEFFICIENT, 1);
-        }else if (level==1){
-            color = new Color(66*RGB_COLOR_COEFFICIENT, 134*RGB_COLOR_COEFFICIENT, 244*RGB_COLOR_COEFFICIENT, 1);
-        }else {
-            color = new Color(38*RGB_COLOR_COEFFICIENT, 67*RGB_COLOR_COEFFICIENT, 139*RGB_COLOR_COEFFICIENT, 1);
-        }
-        drawBodyPoints(batch,color);
+        drawBodyPoints(batch);
     }
 
-    public void update(float alpha) {
-//        this.alpha=alpha;
+    public void update(float pressure) {
+        float alpha = Math.min((pressure - RING_START_LEVEL[level]) / RING_FULL_VAlUE_LEVEL[level], 1);
+        color.a = alpha;
     }
-    public void drawBodyPoints(SpriteBatch batch, Color color){
+    public void drawBodyPoints(SpriteBatch batch){
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
         shapeRenderer.setAutoShapeType(true);

@@ -1,6 +1,5 @@
 package com.hesham0_0.spaceship.models;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -12,10 +11,9 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class spaceshipBullet {
-    private Body body;
-    private Color color;
+    private final Body body;
     private Vector2 speed;
-    private Texture bulletTexture;
+    private final Texture bulletTexture;
     private boolean isAlive=true;
 
     public spaceshipBullet(World world, float x, float y, float width, float height) {
@@ -81,8 +79,7 @@ public class spaceshipBullet {
     }
 
     public void die() {
-        isAlive=false;
-        // Remove the Rock object from the game
+        isAlive = false;
     }
     public boolean isAlive(){
         return isAlive;

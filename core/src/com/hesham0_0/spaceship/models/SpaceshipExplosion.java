@@ -18,7 +18,7 @@ public class SpaceshipExplosion {
     private final float durationTime;
     private boolean isAlive = true;
     private final Texture numTexture;
-    private int score;
+    private final int score;
 
     public SpaceshipExplosion(Vector2 position, float durationTime, String signal, int score) {
         explosionTexture = new Texture("spaceshipGame/explosion.png");
