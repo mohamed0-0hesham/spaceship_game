@@ -265,4 +265,8 @@ public class Spaceship {
     public void resetPiecesAlpha() {
         piecesAlpha = 1;
     }
+
+    public float getAngle() {
+        return targetAngle;
+    }
 }

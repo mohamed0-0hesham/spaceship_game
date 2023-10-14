@@ -22,10 +22,10 @@ public class RockFragments {
     private Array<Texture> pieceTextures ;
     private  Array<Vector2> piecePositions ;
     private  Array<Vector2> pieceVelocities ;
-    private final com.hesham0_0.spaceship.models.spaceshipRock rock;
+    private final SpaceshipRock rock;
     private final int score;
 
-    public RockFragments(float durationTime, String signal, int score, spaceshipRock rock) {
+    public RockFragments(float durationTime, String signal, int score, SpaceshipRock rock) {
         this.rockTexture = rock.getTexture();
         this.x = rock.getBody().getPosition().x;
         this.y = rock.getBody().getPosition().y;

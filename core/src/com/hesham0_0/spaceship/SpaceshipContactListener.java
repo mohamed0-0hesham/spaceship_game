@@ -6,9 +6,9 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.hesham0_0.spaceship.models.Wall;
-import com.hesham0_0.spaceship.models.spaceshipBullet;
-import com.hesham0_0.spaceship.models.spaceshipRing;
-import com.hesham0_0.spaceship.models.spaceshipRock;
+import com.hesham0_0.spaceship.models.SpaceshipBullet;
+import com.hesham0_0.spaceship.models.SpaceshipRing;
+import com.hesham0_0.spaceship.models.SpaceshipRock;
 
 public class SpaceshipContactListener implements ContactListener {
     SpaceshipContactCallback listener;
@@ -21,48 +21,48 @@ public class SpaceshipContactListener implements ContactListener {
         Object bodyA = contact.getFixtureA().getBody().getUserData();
         Object bodyB = contact.getFixtureB().getBody().getUserData();
         Vector2 contactPosition =contact.getWorldManifold().getPoints()[0];
-        if (bodyA instanceof spaceshipBullet && bodyB instanceof spaceshipRock) {
-            spaceshipBullet bullet = (spaceshipBullet) bodyA;
-            spaceshipRock rock = (spaceshipRock) bodyB;
+        if (bodyA instanceof SpaceshipBullet && bodyB instanceof SpaceshipRock) {
+            SpaceshipBullet bullet = (SpaceshipBullet) bodyA;
+            SpaceshipRock rock = (SpaceshipRock) bodyB;
             listener.bulletRockCollision(rock,bullet,contactPosition);
 
-        } else if (bodyA instanceof spaceshipRock && bodyB instanceof spaceshipBullet) {
-            spaceshipRock rock = (spaceshipRock) bodyA;
-            spaceshipBullet bullet = (spaceshipBullet) bodyB;
+        } else if (bodyA instanceof SpaceshipRock && bodyB instanceof SpaceshipBullet) {
+            SpaceshipRock rock = (SpaceshipRock) bodyA;
+            SpaceshipBullet bullet = (SpaceshipBullet) bodyB;
             listener.bulletRockCollision(rock,bullet,contactPosition);
         }
 
 
-        if (bodyA instanceof spaceshipRing && bodyB instanceof spaceshipRock) {
-            spaceshipRing ring = (spaceshipRing) bodyA;
-            spaceshipRock rock = (spaceshipRock) bodyB;
+        if (bodyA instanceof SpaceshipRing && bodyB instanceof SpaceshipRock) {
+            SpaceshipRing ring = (SpaceshipRing) bodyA;
+            SpaceshipRock rock = (SpaceshipRock) bodyB;
             listener.ringRocksCollision(ring,rock,contactPosition);
 
-        } else if (bodyA instanceof spaceshipRock && bodyB instanceof spaceshipRing) {
-            spaceshipRock rock = (spaceshipRock) bodyA;
-            spaceshipRing ring = (spaceshipRing) bodyB;
+        } else if (bodyA instanceof SpaceshipRock && bodyB instanceof SpaceshipRing) {
+            SpaceshipRock rock = (SpaceshipRock) bodyA;
+            SpaceshipRing ring = (SpaceshipRing) bodyB;
             listener.ringRocksCollision(ring,rock, contactPosition);
         }
 
-        if (bodyA instanceof Wall && bodyB instanceof spaceshipRock) {
+        if (bodyA instanceof Wall && bodyB instanceof SpaceshipRock) {
             Wall wall = (Wall) bodyA;
-            spaceshipRock rock = (spaceshipRock) bodyB;
+            SpaceshipRock rock = (SpaceshipRock) bodyB;
             listener.wallRocksCollision(wall,rock);
 
-        } else if (bodyA instanceof spaceshipRock && bodyB instanceof Wall) {
-            spaceshipRock rock = (spaceshipRock) bodyA;
+        } else if (bodyA instanceof SpaceshipRock && bodyB instanceof Wall) {
+            SpaceshipRock rock = (SpaceshipRock) bodyA;
             Wall wall = (Wall) bodyB;
             listener.wallRocksCollision(wall,rock);
         }
 
-        if (bodyA instanceof spaceshipBullet && bodyB instanceof Wall) {
-            spaceshipBullet bullet = (spaceshipBullet) bodyA;
+        if (bodyA instanceof SpaceshipBullet && bodyB instanceof Wall) {
+            SpaceshipBullet bullet = (SpaceshipBullet) bodyA;
             Wall wall = (Wall) bodyB;
             listener.wallBulletCollision(wall,bullet);
 
-        } else if (bodyA instanceof Wall && bodyB instanceof spaceshipBullet) {
+        } else if (bodyA instanceof Wall && bodyB instanceof SpaceshipBullet) {
             Wall wall = (Wall) bodyA;
-            spaceshipBullet bullet = (spaceshipBullet) bodyB;
+            SpaceshipBullet bullet = (SpaceshipBullet) bodyB;
             listener.wallBulletCollision(wall,bullet);
         }
     }
