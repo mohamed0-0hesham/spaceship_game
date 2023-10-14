@@ -30,9 +30,8 @@ public class SpaceshipUtils {
     // ---------------------(game speed setting)--------------------
     public static final float rockSpeed = 200 * 1f;
     public static final float bulletSpeed = 200 * 4f;
-    public static final float bulletsFrequency = 7.0f;
     public static final float explosionAnimationTime = 0.8f;
-    public static final boolean forceField = false;
+
     //-----------------------------------------------------------
 
     public static String getTextureNumberPath(int health){
@@ -48,6 +47,11 @@ public class SpaceshipUtils {
         int randomShape = random.nextInt(9) + 1;
         return "spaceshipGame/rocks_level_" + level + "/" + randomShape + ".png";
     }
+//    public static String getRandomItem() {
+//        Random random = new Random();
+//        int randomShape = random.nextInt(9) + 1;
+//        return "spaceshipGame/rocks_level_" + level + "/" + randomShape + ".png";
+//    }
     public static float getRandomRockRotation() {
         Random random = new Random();
         return (float) (random.nextInt(3) * 5);
