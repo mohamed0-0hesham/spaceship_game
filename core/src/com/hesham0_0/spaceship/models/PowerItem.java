@@ -11,6 +11,7 @@ import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
+import com.hesham0_0.spaceship.PowerType;
 
 public class PowerItem {
     private Vector2 speed;
@@ -20,14 +21,15 @@ public class PowerItem {
     public float x;
     public float y;
     public float angle;
-    public PowerItem itemType;
+    public PowerType itemType;
     private final Body itemBody;
     private boolean isAlive = true;
     public float rotationAngle = 0;
 
-    public PowerItem(World world, PowerItem itemType, float x, float y) {
+    public PowerItem(World world, PowerType itemType, float x, float y) {
         this.x = x;
         this.y = y;
+        this.itemType = itemType;
 
         itemTexture = new Texture("rock1.png");
         itemRadius = itemTexture.getWidth() / 2;
@@ -94,7 +96,6 @@ public class PowerItem {
     }
 
     public void dispose() {
-        // Dispose of the body when the bullet is no longer needed
         itemTexture.dispose();
         itemBody.getWorld().destroyBody(itemBody);
     }

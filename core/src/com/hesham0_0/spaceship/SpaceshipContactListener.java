@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
+import com.hesham0_0.spaceship.models.PowerItem;
 import com.hesham0_0.spaceship.models.Wall;
 import com.hesham0_0.spaceship.models.SpaceshipBullet;
 import com.hesham0_0.spaceship.models.SpaceshipRing;
@@ -32,6 +33,16 @@ public class SpaceshipContactListener implements ContactListener {
             listener.bulletRockCollision(rock,bullet,contactPosition);
         }
 
+        if (bodyA instanceof SpaceshipBullet && bodyB instanceof PowerItem) {
+            SpaceshipBullet bullet = (SpaceshipBullet) bodyA;
+            PowerItem item = (PowerItem) bodyB;
+            listener.bulletItemCollision(item,bullet,contactPosition);
+
+        } else if (bodyA instanceof PowerItem && bodyB instanceof SpaceshipBullet) {
+            PowerItem item = (PowerItem) bodyA;
+            SpaceshipBullet bullet = (SpaceshipBullet) bodyB;
+            listener.bulletItemCollision(item,bullet,contactPosition);
+        }
 
         if (bodyA instanceof SpaceshipRing && bodyB instanceof SpaceshipRock) {
             SpaceshipRing ring = (SpaceshipRing) bodyA;
@@ -53,6 +64,17 @@ public class SpaceshipContactListener implements ContactListener {
             SpaceshipRock rock = (SpaceshipRock) bodyA;
             Wall wall = (Wall) bodyB;
             listener.wallRocksCollision(wall,rock);
+        }
+
+        if (bodyA instanceof Wall && bodyB instanceof PowerItem) {
+            Wall wall = (Wall) bodyA;
+            PowerItem item = (PowerItem) bodyB;
+            listener.wallItemCollision(wall,item);
+
+        } else if (bodyA instanceof PowerItem && bodyB instanceof Wall) {
+            PowerItem item = (PowerItem) bodyA;
+            Wall wall = (Wall) bodyB;
+            listener.wallItemCollision(wall,item);
         }
 
         if (bodyA instanceof SpaceshipBullet && bodyB instanceof Wall) {
