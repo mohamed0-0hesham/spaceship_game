@@ -65,6 +65,7 @@
                 android:id="@+id/health_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -79,7 +80,7 @@
                 android:layout_marginHorizontal="15sp"
                 app:layout_constraintBottom_toBottomOf="@+id/health_bar"
                 app:layout_constraintEnd_toEndOf="@+id/health_bar"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/health_bar"
                 app:layout_constraintTop_toTopOf="@+id/health_bar"
                 app:srcCompat="@drawable/health_bar_value" />
         </androidx.constraintlayout.widget.ConstraintLayout>

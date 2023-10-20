@@ -26,7 +26,6 @@ public class GameFragment extends AndroidFragmentApplication {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        gameViewModel = new ViewModelProvider(requireActivity()).get(GameViewModel.class);
         // Inflate the layout for this fragment
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         PointsUpdateListener pointsUpdateListener = new PointsUpdateListener() {

@@ -74,7 +74,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     private final List<PowerItem> powerItems = new ArrayList<>();
     private long lastShootingTime = 0;
     private int rockLevels = 1;
-    public static float bulletsFrequency = 1.0f;
+    public static float bulletsFrequency = 3.0f;
     public boolean forceField = true;
     private Vector2 lastClick = new Vector2(0, 0);
     float ringPower = 0;
@@ -83,7 +83,6 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     public SpaceshipGame(PointsUpdateListener pointsUpdateListener) {
         this.pointsUpdateListener = pointsUpdateListener;
     }
-
 
     @Override
     public void create() {
@@ -339,7 +338,9 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
             SpaceshipRock rock = rockIterator.next();
 
             if (Intersector.overlapConvexPolygons(spaceship.getSensorShape(), rock.getRockPolygonShape()) && !collisionRocks.contains(rock)) {
-                pointsUpdateListener.onHealthChanges(-rock.level);
+                if (spaceship.state != SpaceshipState.DESTROYED){
+                    pointsUpdateListener.onHealthChanges(-rock.level);
+                }
                 if (points == 0 && spaceship.state != SpaceshipState.DESTROYED) {
                     spaceship.createPieces(rock.angle);
                     spaceship.state = SpaceshipState.DESTROYED;
@@ -490,7 +491,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y, worldX - spaceship.getBody().getPosition().x);
 
         spaceship.setTargetAngle(angle);
-        if (currentClick.dst(lastClick) < 5) {
+        if (currentClick.dst(lastClick) < 100) {
             bulletTime();
         }
         lastClick = new Vector2(worldX, worldY);
