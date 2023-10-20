@@ -7,12 +7,15 @@ import androidx.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.hesham0_0.spaceship.PointsUpdateListener;
+import com.hesham0_0.spaceship.R;
 import com.hesham0_0.spaceship.SpaceshipGame;
 
-public class MainFragment  extends AndroidFragmentApplication {
+public class GameFragment extends AndroidFragmentApplication {
     private SpaceshipGame game;
     private GameViewModel gameViewModel ;
 
@@ -30,7 +33,7 @@ public class MainFragment  extends AndroidFragmentApplication {
         // Inflate the layout for this fragment
         AndroidApplicationConfiguration config = new AndroidApplicationConfiguration();
         PointsUpdateListener pointsUpdateListener = points -> runOnUiThread(() -> gameViewModel.points.setValue(points));
-        game= new SpaceshipGame(pointsUpdateListener);
+        game = new SpaceshipGame(pointsUpdateListener);
 
         return initializeForView(game, config);
 
@@ -39,5 +42,6 @@ public class MainFragment  extends AndroidFragmentApplication {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         gameViewModel.gameState.observe(this.getViewLifecycleOwner(),gameState -> game.alterGameStatus(gameState!=GameState.PLAYING));
+
     }
 }
