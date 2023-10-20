@@ -2,6 +2,7 @@ package com.hesham0_0.spaceship.models;
 
 import static com.hesham0_0.spaceship.SpaceshipState.STABLE;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -30,6 +31,7 @@ public class Spaceship {
     private Array<Vector2> piecePositions;
     private Array<Vector2> pieceVelocities;
     private float piecesAlpha = 1;
+    public boolean allowToFire;
 
 
     public Spaceship(World world, float virtualWidth, float virtualHeight) {

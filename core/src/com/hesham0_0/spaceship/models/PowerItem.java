@@ -30,8 +30,11 @@ public class PowerItem {
         this.x = x;
         this.y = y;
         this.itemType = itemType;
-
-        itemTexture = new Texture("rock1.png");
+        if (itemType == PowerType.BULLETS) {
+            itemTexture = new Texture("spaceshipGame/bullets_item.png");
+        } else {
+            itemTexture = new Texture("spaceshipGame/rings_item.png");
+        }
         itemRadius = itemTexture.getWidth() / 2;
         itemSprite = new Sprite(itemTexture);
 
@@ -58,18 +61,6 @@ public class PowerItem {
         itemBody.setMassData(massData);
 
         itemBody.setUserData(this);
-    }
-
-    public void moveTo(Vector2 position, float speedMagnitude) {
-        float dx = position.x - x;
-        float dy = position.y - y;
-        float distance = (float) Math.sqrt(dx * dx + dy * dy);
-
-        float speedX = dx / distance * speedMagnitude;
-        float speedY = dy / distance * speedMagnitude;
-
-        angle = (float) Math.atan2(speedY, speedX);
-        this.speed = new Vector2(speedX, speedY);
     }
 
     public void setSpeed(float magnitude, float angle) {
@@ -112,24 +103,5 @@ public class PowerItem {
         return isAlive;
     }
 
-//    public Polygon getRockPolygonShape() {
-//        Polygon polygon = new Polygon();
-//        int numVertices = 16;
-//
-//        float[] vertices = new float[numVertices * 2];
-//        float angleIncrement = 2 * MathUtils.PI / numVertices;
-//
-//        for (int i = 0; i < numVertices; i++) {
-//            float angle = i * angleIncrement;
-//            Vector2 vertex = new Vector2(rockTexture.getWidth() / 2f * MathUtils.cos(angle), rockTexture.getWidth() / 2f * MathUtils.sin(angle));
-//            vertices[i * 2] = vertex.x + rockBody.getPosition().x;
-//            vertices[i * 2 + 1] = vertex.y + rockBody.getPosition().y;
-//        }
-//        polygon.setVertices(vertices);
-//        return polygon;
-//    }
 
-    public Texture getTexture() {
-        return itemTexture;
-    }
 }

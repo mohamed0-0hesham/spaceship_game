@@ -14,7 +14,6 @@ import static com.hesham0_0.spaceship.SpaceshipUtils.rockSpeed;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -79,7 +78,11 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     private long lastShootingTime = 0;
     private int rockLevels = 1;
     public static float bulletsFrequency = 1.0f;
-    public boolean forceField = false;
+    public boolean forceField = true;
+    private Vector2 lastClick = new Vector2(0, 0);
+    float ringPower = 0;
+    float ringCounter = -1;
+    float ringTimer = 0;
 
     public SpaceshipGame(PointsUpdateListener pointsUpdateListener) {
         this.pointsUpdateListener = pointsUpdateListener;
@@ -171,7 +174,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
             @Override
             public void bulletRockCollision(SpaceshipRock rock, SpaceshipBullet bullet, Vector2 contactPosition) {
                 if (!collisionRingRocks.contains(rock)) {
-                    rock.decreaseHealth();
+                    rock.decreaseHealthBy(bullet.getBulletPower());
                     if (rock.health == 0) {
                         collisionRingRocks.add(rock);
                         createRockFragments(rock, "+", rock.level);
@@ -199,7 +202,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
             public void bulletItemCollision(PowerItem item, SpaceshipBullet bullet, Vector2 contactPosition) {
                 item.die();
                 if (item.itemType == RINGS) {
-                    forceField = true;
+                    runTheRingsPower();
                 } else if (item.itemType == BULLETS) {
                     bulletsFrequency++;
                 }
@@ -223,12 +226,30 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         world.setContactListener(contactListener);
     }
 
+    public void runTheRingsPower() {
+        ringCounter = -1;
+
+        Timer itemTimer = new Timer();
+        itemTimer.scheduleTask(new Timer.Task() {
+            @Override
+            public void run() {
+                if (!isGamePaused) {
+                    ringCounter++;
+                    ringPower = (float) (200 * Math.sin(Math.toRadians(ringCounter)));
+                    createRings(ringPower);
+                    Gdx.app.log("ringPower", "ringCounter = " + ringCounter);
+                    Gdx.app.log("ringPower", "ringPower = " + ringPower);
+                }
+            }
+        }, 0, 0.1f, 180);
+
+    }
+
     @Override
     public void render() {
         float delta = Gdx.graphics.getDeltaTime();
         world.step(1 / 60f, 6, 2);
         if (!isGamePaused) {
-            createRings();
             spaceship.update(delta);
             updateBullets(delta);
             updateRock(delta);
@@ -460,11 +481,14 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
         float worldX = worldCoordinates.x;
         float worldY = worldCoordinates.y;
-
+        Vector2 currentClick = new Vector2(worldX, worldY);
         float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y, worldX - spaceship.getBody().getPosition().x);
 
         spaceship.setTargetAngle(angle);
-        bulletTime();
+        if (currentClick.dst(lastClick) < 5) {
+            bulletTime();
+        }
+        lastClick = new Vector2(worldX, worldY);
         return true;
     }
 
@@ -505,7 +529,9 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         SpaceshipBullet bullet = new SpaceshipBullet(world,
                 spaceship.getBody().getPosition().x,
                 spaceship.getBody().getPosition().y,
-                10, 10, spaceship.getAngle());
+                10, 10, spaceship.getAngle(),
+                1
+        );
 
         bullet.setSpeed(spaceship.currentAngle, bulletSpeed);
         bullets.add(bullet);
@@ -598,8 +624,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         rockFragments.add(fragments);
     }
 
-    private void createRings() {
-        int ringPower = 100;
+    private void createRings(float ringPower) {
         createOrDestroyRing(ringPower, spaceship.getTexture().getWidth() * 0.8f, ring_1, 0);
         createOrDestroyRing(ringPower, spaceship.getTexture().getWidth() * 1.1f, ring_2, 1);
         createOrDestroyRing(ringPower, spaceship.getTexture().getWidth() * 1.4f, ring_3, 2);

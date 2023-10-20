@@ -17,8 +17,10 @@ public class SpaceshipBullet {
     private Vector2 speed;
     private final Texture bulletTexture;
     private boolean isAlive = true;
+    private int bulletPower = 1;
 
-    public SpaceshipBullet(World world, float x, float y, float width, float height, float angle) {
+    public SpaceshipBullet(World world, float x, float y, float width, float height, float angle, int bulletPower) {
+        this.bulletPower = bulletPower;
         this.angle = (float) (angle - Math.toRadians(90));
         bulletTexture = new Texture("spaceshipGame/bullet.png");
 
@@ -93,10 +95,15 @@ public class SpaceshipBullet {
         return body;
     }
 
+    public int getBulletPower() {
+        return bulletPower;
+    }
+
     public void die() {
         isAlive = false;
     }
-    public boolean isAlive(){
+
+    public boolean isAlive() {
         return isAlive;
     }
 }

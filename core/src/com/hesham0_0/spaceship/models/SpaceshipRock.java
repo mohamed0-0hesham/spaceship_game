@@ -120,8 +120,8 @@ public class SpaceshipRock {
         isAlive=false;
     }
 
-    public void decreaseHealth() {
-        health -= 1;
+    public void decreaseHealthBy(int bulletPower) {
+        health = Math.max(0, health - bulletPower);
     }
     public boolean isAlive(){
         return isAlive;
