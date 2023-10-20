@@ -1,7 +1,6 @@
 package com.hesham0_0.spaceship;
 
-import static com.hesham0_0.spaceship.PowerType.BULLETS;
-import static com.hesham0_0.spaceship.PowerType.RINGS;
+import static com.hesham0_0.spaceship.SpaceshipUtils.MAX_PRESSURE;
 import static com.hesham0_0.spaceship.SpaceshipUtils.MILLIS_IN_SECOND;
 import static com.hesham0_0.spaceship.SpaceshipUtils.RGB_COLOR_COEFFICIENT;
 import static com.hesham0_0.spaceship.SpaceshipUtils.RING_START_LEVEL;
@@ -10,7 +9,6 @@ import static com.hesham0_0.spaceship.SpaceshipUtils.explosionAnimationTime;
 import static com.hesham0_0.spaceship.SpaceshipUtils.getRandomRockColor;
 import static com.hesham0_0.spaceship.SpaceshipUtils.getRandomRockRotation;
 import static com.hesham0_0.spaceship.SpaceshipUtils.rockSpeed;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
@@ -37,7 +35,6 @@ import com.hesham0_0.spaceship.models.Wall;
 import com.hesham0_0.spaceship.models.SpaceshipBullet;
 import com.hesham0_0.spaceship.models.SpaceshipRing;
 import com.hesham0_0.spaceship.models.SpaceshipRock;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -82,7 +79,6 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     private Vector2 lastClick = new Vector2(0, 0);
     float ringPower = 0;
     float ringCounter = -1;
-    float ringTimer = 0;
 
     public SpaceshipGame(PointsUpdateListener pointsUpdateListener) {
         this.pointsUpdateListener = pointsUpdateListener;
@@ -201,10 +197,18 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
             @Override
             public void bulletItemCollision(PowerItem item, SpaceshipBullet bullet, Vector2 contactPosition) {
                 item.die();
-                if (item.itemType == RINGS) {
-                    runTheRingsPower();
-                } else if (item.itemType == BULLETS) {
-                    bulletsFrequency++;
+                switch (item.itemType) {
+                    case RINGS:
+                        runTheRingsPower();
+                        break;
+                    case BULLETS:
+                        bulletsFrequency++;
+                        break;
+                    case HEALTH:
+                        pointsUpdateListener.onHealthChanges(+5);
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -235,7 +239,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
             public void run() {
                 if (!isGamePaused) {
                     ringCounter++;
-                    ringPower = (float) (200 * Math.sin(Math.toRadians(ringCounter)));
+                    ringPower = (float) (MAX_PRESSURE * Math.sin(Math.toRadians(ringCounter)));
                     createRings(ringPower);
                     Gdx.app.log("ringPower", "ringCounter = " + ringCounter);
                     Gdx.app.log("ringPower", "ringPower = " + ringPower);
@@ -335,6 +339,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
             SpaceshipRock rock = rockIterator.next();
 
             if (Intersector.overlapConvexPolygons(spaceship.getSensorShape(), rock.getRockPolygonShape()) && !collisionRocks.contains(rock)) {
+                pointsUpdateListener.onHealthChanges(-rock.level);
                 if (points == 0 && spaceship.state != SpaceshipState.DESTROYED) {
                     spaceship.createPieces(rock.angle);
                     spaceship.state = SpaceshipState.DESTROYED;
@@ -556,14 +561,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     private void createItems() {
         float halfRockWidth = rockTexture.getWidth() / 2f;
         float[] position = getRandomEdge(halfRockWidth);
-        int randomItem = new Random().nextInt(2);
-        PowerType type;
-        if (randomItem == 1) {
-            type = RINGS;
-        } else {
-            type = BULLETS;
-        }
-        PowerItem item = new PowerItem(world, type, position[0], position[1]);
+        PowerItem item = new PowerItem(world, position[0], position[1]);
         powerItems.add(item);
         item.setSpeed(rockSpeed * rockSpeedDifficultyCoefficient, (float) Math.toRadians(position[2]));
 

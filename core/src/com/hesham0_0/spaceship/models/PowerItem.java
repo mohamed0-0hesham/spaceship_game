@@ -1,5 +1,7 @@
 package com.hesham0_0.spaceship.models;
 
+import static com.hesham0_0.spaceship.SpaceshipUtils.getItemImage;
+import static com.hesham0_0.spaceship.SpaceshipUtils.getItemType;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.MassData;
 import com.badlogic.gdx.physics.box2d.World;
 import com.hesham0_0.spaceship.PowerType;
+import java.util.Random;
 
 public class PowerItem {
     private Vector2 speed;
@@ -26,15 +29,13 @@ public class PowerItem {
     private boolean isAlive = true;
     public float rotationAngle = 0;
 
-    public PowerItem(World world, PowerType itemType, float x, float y) {
+    public PowerItem(World world, float x, float y) {
         this.x = x;
         this.y = y;
-        this.itemType = itemType;
-        if (itemType == PowerType.BULLETS) {
-            itemTexture = new Texture("spaceshipGame/bullets_item.png");
-        } else {
-            itemTexture = new Texture("spaceshipGame/rings_item.png");
-        }
+        int randomItem = new Random().nextInt(3);
+        this.itemType = getItemType(randomItem);
+        itemTexture =  getItemImage(randomItem);
+
         itemRadius = itemTexture.getWidth() / 2;
         itemSprite = new Sprite(itemTexture);
 

@@ -1,13 +1,12 @@
 package com.hesham0_0.spaceship;
 
 import com.badlogic.gdx.graphics.Color;
-
+import com.badlogic.gdx.graphics.Texture;
 import java.util.Random;
 
 public class SpaceshipUtils {
-    public static int MAX_PRESSURE = 100;
+    public static int MAX_PRESSURE = 200;
     public static long MILLIS_IN_SECOND = 1000;
-    public static int SQUEEZE_THRESHOLD = 15;
     public static float colorAttr1 = 1f;
     public static float colorAttr2 = 0.5f;
     public static float RGB_COLOR_COEFFICIENT = 1 / 256f;
@@ -26,17 +25,22 @@ public class SpaceshipUtils {
             new Color(colorAttr2, colorAttr1, colorAttr2, 1f),
             new Color(colorAttr2, colorAttr2, colorAttr1, 1f)
     };
-
+    public static PowerType[] POWER_TYPES = {
+            PowerType.BULLETS,
+            PowerType.RINGS,
+            PowerType.HEALTH
+    };
+    public static Texture[] POWER_TYPES_IMAGES = {
+            new Texture("spaceshipGame/bullets_item.png"),
+            new Texture("spaceshipGame/rings_item.png"),
+            new Texture("spaceshipGame/health_item.png")
+    };
     // ---------------------(game speed setting)--------------------
     public static final float rockSpeed = 200 * 1f;
     public static final float bulletSpeed = 200 * 4f;
     public static final float explosionAnimationTime = 0.8f;
 
     //-----------------------------------------------------------
-
-    public static String getTextureNumberPath(int health){
-        return "spaceshipGame/spaceship_num_"+health+".png";
-    }
 
     public static String getTextureExplosionNumberPath(String signal,int score){
         return "spaceshipGame/spaceship_num_"+signal+score+".png";
@@ -47,11 +51,12 @@ public class SpaceshipUtils {
         int randomShape = random.nextInt(9) + 1;
         return "spaceshipGame/rocks_level_" + level + "/" + randomShape + ".png";
     }
-//    public static String getRandomItem() {
-//        Random random = new Random();
-//        int randomShape = random.nextInt(9) + 1;
-//        return "spaceshipGame/rocks_level_" + level + "/" + randomShape + ".png";
-//    }
+    public static PowerType getItemType(int randomItem) {
+        return POWER_TYPES[randomItem];
+    }
+    public static Texture getItemImage(int randomItem) {
+        return POWER_TYPES_IMAGES[randomItem];
+    }
     public static float getRandomRockRotation() {
         Random random = new Random();
         return (float) (random.nextInt(3) * 5);
