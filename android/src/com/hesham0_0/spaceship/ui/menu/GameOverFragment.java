@@ -1,4 +1,4 @@
-package com.hesham0_0.spaceship.ui;
+package com.hesham0_0.spaceship.ui.menu;
 
 import android.os.Bundle;
 
@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.hesham0_0.spaceship.R;
-import com.hesham0_0.spaceship.ui.main.GameViewModel;
+import com.hesham0_0.spaceship.ui.game.GameViewModel;
 
 public class GameOverFragment extends Fragment {
 
@@ -38,7 +38,6 @@ public class GameOverFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         scoreText = view.findViewById(R.id.score_View);
         scoreText.setText(getResources().getString(R.string.game_over_score, gameViewModel.points.getValue()));
-        playBtn = view.findViewById(R.id.play_btn);
-        playBtn.setOnClickListener(v -> gameViewModel.currentScreen.setValue(1));
+        playBtn = view.findViewById(R.id.next_btn);
     }
 }

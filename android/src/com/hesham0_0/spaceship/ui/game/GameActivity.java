@@ -1,28 +1,26 @@
-package com.hesham0_0.spaceship.ui.main;
+package com.hesham0_0.spaceship.ui.game;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import android.animation.ObjectAnimator;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import com.badlogic.gdx.backends.android.AndroidFragmentApplication;
 import com.hesham0_0.spaceship.R;
-import com.hesham0_0.spaceship.ui.GameOverFragment;
+import com.hesham0_0.spaceship.ui.menu.MenuActivity;
 
-public class MainActivity extends AppCompatActivity implements AndroidFragmentApplication.Callbacks {
+public class GameActivity extends AppCompatActivity implements AndroidFragmentApplication.Callbacks {
     private GameViewModel gameViewModel;
     private TextView scoreText;
     private ImageView pauseBtn;
     private ProgressBar health_bar;
-    private int health = 100;
-    private GameFragment gameFragment;
-    private GameOverFragment gameOverFragment;
+    private int health = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,19 +28,13 @@ public class MainActivity extends AppCompatActivity implements AndroidFragmentAp
         setContentView(R.layout.activity_main);
         gameViewModel = new ViewModelProvider(this).get(GameViewModel.class);
         initUi();
-        gameFragment = new GameFragment();
-        gameOverFragment = new GameOverFragment();
-        getSupportFragmentManager()
-                .beginTransaction()
-                .add(R.id.container, gameFragment)
-                .addToBackStack("0")
-                .commit();
+        GameFragment gameFragment = new GameFragment();
+        navToFrag(gameFragment);
     }
     private void navToFrag(Fragment fragment){
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, fragment);
-        transaction.addToBackStack(null); // Optional
-        transaction.commit();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, fragment)
+                .commitNow();
     }
     private void initUi(){
         scoreText = findViewById(R.id.score);
@@ -57,30 +49,19 @@ public class MainActivity extends AppCompatActivity implements AndroidFragmentAp
                 pauseBtn.setImageResource(R.drawable.pause_circle);
             }
         });
-        health_bar.setMax(100);
+        health_bar.setMax(1000);
         decreaseHealthBar(health);
         setObserves();
     }
 
     private void setObserves() {
         gameViewModel.points.observe(this, points -> scoreText.setText(getResources().getString(R.string.score_game_text, points)));
-//        gameViewModel.currentScreen.observe(this,screen->{
-//            switch (screen){
-//                case 1:
-//                    navToFrag(gameFragment);
-//                    break;
-//                case 2:
-//                    navToFrag(gameOverFragment);
-//                    break;
-//            }
-//        });
         gameViewModel.healthDecrease.observe(this, points -> {
-            health = min(100,max(0, health + points * 3));
+            health = min(1000,max(0, health + points * 30));
             decreaseHealthBar(health);
-//            if (health == 0) {
-//                gameViewModel.gameState.setValue(GameState.STOPPED);
-//                gameViewModel.currentScreen.setValue(2);
-//            }
+            if (health == 0) {
+                navToMenuActivity();
+            }
         });
     }
 
@@ -93,5 +74,10 @@ public class MainActivity extends AppCompatActivity implements AndroidFragmentAp
     @Override
     public void exit() {
 
+    }
+    private void navToMenuActivity() {
+        Intent intent = new Intent(this, MenuActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

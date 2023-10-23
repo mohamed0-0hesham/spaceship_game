@@ -1,4 +1,4 @@
-package com.hesham0_0.spaceship.ui.main;
+package com.hesham0_0.spaceship.ui.game;
 
 import androidx.lifecycle.ViewModelProvider;
 import android.os.Bundle;
@@ -48,6 +48,5 @@ public class GameFragment extends AndroidFragmentApplication {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         gameViewModel.gameState.observe(this.getViewLifecycleOwner(),gameState -> game.alterGameStatus(gameState!=GameState.PLAYING));
-
     }
 }

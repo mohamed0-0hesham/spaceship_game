@@ -76,7 +76,6 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     private int rockLevels = 1;
     public static float bulletsFrequency = 3.0f;
     public boolean forceField = true;
-    private Vector2 lastClick = new Vector2(0, 0);
     float ringPower = 0;
     float ringCounter = -1;
 
@@ -132,10 +131,10 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         setGameSetting();
     }
 
-    private void bulletTime() {
+    private void bulletTime(float angle) {
         float bulletInterval = (MILLIS_IN_SECOND / bulletsFrequency);
         if ((System.currentTimeMillis() - lastShootingTime) >= bulletInterval && spaceship.state != SpaceshipState.DESTROYED) {
-            createBullets();
+            createBullets(angle);
             lastShootingTime = System.currentTimeMillis();
         }
     }
@@ -487,14 +486,10 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         Vector3 worldCoordinates = camera.unproject(new Vector3(screenX, screenY, 0));
         float worldX = worldCoordinates.x;
         float worldY = worldCoordinates.y;
-        Vector2 currentClick = new Vector2(worldX, worldY);
         float angle = MathUtils.atan2(worldY - spaceship.getBody().getPosition().y, worldX - spaceship.getBody().getPosition().x);
 
         spaceship.setTargetAngle(angle);
-        if (currentClick.dst(lastClick) < 100) {
-            bulletTime();
-        }
-        lastClick = new Vector2(worldX, worldY);
+        bulletTime(angle);
         return true;
     }
 
@@ -531,7 +526,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
         return false;
     }
 
-    private void createBullets() {
+    private void createBullets(float angle) {
         SpaceshipBullet bullet = new SpaceshipBullet(world,
                 spaceship.getBody().getPosition().x,
                 spaceship.getBody().getPosition().y,
@@ -539,7 +534,7 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
                 1
         );
 
-        bullet.setSpeed(spaceship.currentAngle, bulletSpeed);
+        bullet.setSpeed(angle, bulletSpeed);
         bullets.add(bullet);
     }
 
@@ -664,19 +659,19 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     public void setGameSetting() {
         pointsUpdateListener.onPointsUpdated(points);
         if (points >= 0 && points <= 5) {
-            setDifficultyValues(1, 0.5f, 1f);
+            setDifficultyValues(1, 1f, 0.5f);
         } else if (points > 6 && points <= 15) {
-            setDifficultyValues(2, 0.5f, 1f);
+            setDifficultyValues(2, 1f, 0.3f);
         } else if (points > 15 && points <= 30) {
-            setDifficultyValues(3, 0.5f, 1f);
+            setDifficultyValues(3, 1f, 0.3f);
         } else if (points > 31 && points <= 40) {
-            setDifficultyValues(3, 0.75f, 0.75f);
+            setDifficultyValues(3, 1f, 0.3f);
         } else if (points > 41 && points <= 55) {
-            setDifficultyValues(3, 1f, 0.75f);
+            setDifficultyValues(3, 1f, 0.2f);
         } else if (points > 56 && points <= 70) {
-            setDifficultyValues(3, 1.25f, 0.5f);
+            setDifficultyValues(3, 1.25f, 0.2f);
         } else if (points > 71) {
-            setDifficultyValues(3, 1.5f, 0.5f);
+            setDifficultyValues(3, 1.5f, 0.1f);
         }
     }
 
