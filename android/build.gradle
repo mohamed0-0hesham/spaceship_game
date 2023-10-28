@@ -114,5 +114,5 @@ tasks.register('run', Exec) {
     def adb = path + "/platform-tools/adb"
     commandLine "$adb", 'shell', 'am', 'start', '-n', 'com.hesham0_0.spaceship/com.hesham0_0.spaceship.AndroidLauncher'
 }
-
+android.buildTypes.release.ndk.debugSymbolLevel = 'FULL'
 eclipse.project.name = appName + "-android"
