@@ -659,19 +659,19 @@ public class SpaceshipGame extends ApplicationAdapter implements InputProcessor 
     public void setGameSetting() {
         pointsUpdateListener.onPointsUpdated(points);
         if (points >= 0 && points <= 5) {
-            setDifficultyValues(1, 1f, 0.5f);
+            setDifficultyValues(1, 1.5f, 0.05f);
         } else if (points > 6 && points <= 15) {
-            setDifficultyValues(2, 1f, 0.3f);
+            setDifficultyValues(2, 1.6f, 0.03f);
         } else if (points > 15 && points <= 30) {
-            setDifficultyValues(3, 1f, 0.3f);
+            setDifficultyValues(3, 1.7f, 0.01f);
         } else if (points > 31 && points <= 40) {
-            setDifficultyValues(3, 1f, 0.3f);
+            setDifficultyValues(3, 1.8f, 0.009f);
         } else if (points > 41 && points <= 55) {
-            setDifficultyValues(3, 1f, 0.2f);
+            setDifficultyValues(3, 1.9f, 0.007f);
         } else if (points > 56 && points <= 70) {
-            setDifficultyValues(3, 1.25f, 0.2f);
+            setDifficultyValues(3, 2.0f, 0.005f);
         } else if (points > 71) {
-            setDifficultyValues(3, 1.5f, 0.1f);
+            setDifficultyValues(3, 2.5f, 0.003f);
         }
     }
 

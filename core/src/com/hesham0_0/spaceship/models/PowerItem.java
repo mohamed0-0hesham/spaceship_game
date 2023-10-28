@@ -34,7 +34,7 @@ public class PowerItem {
         this.y = y;
         int randomItem = new Random().nextInt(3);
         this.itemType = getItemType(randomItem);
-        itemTexture =  getItemImage(randomItem);
+        itemTexture =  new Texture(getItemImage(randomItem));
 
         itemRadius = itemTexture.getWidth() / 2;
         itemSprite = new Sprite(itemTexture);

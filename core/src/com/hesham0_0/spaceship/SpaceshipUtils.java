@@ -30,10 +30,10 @@ public class SpaceshipUtils {
             PowerType.RINGS,
             PowerType.HEALTH
     };
-    public static Texture[] POWER_TYPES_IMAGES = {
-            new Texture("spaceshipGame/bullets_item.png"),
-            new Texture("spaceshipGame/rings_item.png"),
-            new Texture("spaceshipGame/health_item.png")
+    public static String[] POWER_TYPES_IMAGES = {
+            "spaceshipGame/bullets_item.png",
+            "spaceshipGame/rings_item.png",
+            "spaceshipGame/health_item.png"
     };
     // ---------------------(game speed setting)--------------------
     public static final float rockSpeed = 200 * 1f;
@@ -54,7 +54,7 @@ public class SpaceshipUtils {
     public static PowerType getItemType(int randomItem) {
         return POWER_TYPES[randomItem];
     }
-    public static Texture getItemImage(int randomItem) {
+    public static String getItemImage(int randomItem) {
         return POWER_TYPES_IMAGES[randomItem];
     }
     public static float getRandomRockRotation() {
